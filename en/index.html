@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technical Guides — Documentation Hub</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .en-body { direction: ltr; text-align: left; }
+  .en-body .cover h1 { text-align: center; }
+  .en-body .cover .sub { text-align: center; }
+  .en-body .search-wrap input { direction: ltr; text-align: left; }
+  .en-body .course-card { text-align: left; }
+  .en-body .site-footer { text-align: center; }
+</style>
+</head>
+<body class="en-body">
+
+<div class="cover">
+  <div class="breadcrumb">Technical Guides</div>
+  <h1>Complete <span class="hl">Technical</span> Guides</h1>
+  <p class="sub">
+    Practical, step-by-step guides — from CI/CD fundamentals to server administration
+  </p>
+  <div class="search-wrap">
+    <input id="search-input" type="text" placeholder="Search courses ...">
+  </div>
+</div>
+
+<div class="course-grid">
+
+  <a class="course-card" href="courses/github-actions/">
+    <div class="cc-tag">CI/CD</div>
+    <div class="cc-title">GitHub Actions</div>
+    <div class="cc-desc">
+      Complete guide from scratch — Workflows, Jobs, Steps, Matrix, Needs,
+      from setup to production deployment.
+    </div>
+    <div class="cc-meta">
+      <span>11 chapters</span>
+      <span> comprehensive</span>
+    </div>
+  </a>
+
+  <a class="course-card" href="courses/linux-admin/">
+    <div class="cc-tag">Linux</div>
+    <div class="cc-title">Linux Administration</div>
+    <div class="cc-desc">
+      From terminal commands to server management — everything a sysadmin
+      needs in one guide.
+    </div>
+    <div class="cc-meta">
+      <span>22+ chapters</span>
+      <span> comprehensive</span>
+    </div>
+  </a>
+
+</div>
+
+<footer class="site-footer">
+  <div style="display:flex; gap:8px; justify-content:center; align-items:center;">
+    <button id="theme-toggle" class="theme-toggle">🌙</button>
+    <button id="lang-toggle" class="theme-toggle">العربية</button>
+  </div>
+  <p style="margin-top:10px">Technical Guides — Documentation Hub</p>
+</footer>
+
+<script src="../js/theme.js"></script>
+<script src="../js/search.js"></script>
+<script src="../js/lang.js"></script>
+</body>
+</html>

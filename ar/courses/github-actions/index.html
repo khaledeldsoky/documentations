@@ -1,0 +1,2201 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دليل GitHub Actions الشامل <span class="punct"> — </span> CI/CD من الصفر</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg:           #0a0d12;
+    --surface:      #0f1318;
+    --surface2:     #141a22;
+    --surface3:     #192030;
+    --border:       #222c40;
+    --border2:      #2a3850;
+    --accent:       #4f8ef7;
+    --accent2:      #00c2a8;
+    --accent3:      #f0a500;
+    --accent-red:   #e85555;
+    --accent-green: #22c97a;
+    --text:         #dce6f5;
+    --text-dim:     #8899b5;
+    --text-muted:   #4d607a;
+    --code-bg:      #080b0f;
+    --code-border:  #1a2233;
+
+    --heavy1:       #1a2f4a;
+    --heavy2:       #1a3a2a;
+    --heavy3:       #2a1f3a;
+    --heavy1-accent:#4f8ef7;
+    --heavy2-accent:#22c97a;
+    --heavy3-accent:#b87fff;
+
+    --tag-h1-bg:    #1a2f4a; --tag-h1-fg: #7ab8ff;
+    --tag-h2-bg:    #0f2a1a; --tag-h2-fg: #4de89a;
+    --tag-h3-bg:    #221840; --tag-h3-fg: #c89fff;
+    --tag-all-bg:   #1a1a2e; --tag-all-fg: #a0a8e8;
+
+    --font-sans:    'Noto Sans Arabic', sans-serif;
+    --font-serif:   'Noto Naskh Arabic', serif;
+    --font-mono:    'JetBrains Mono', monospace;
+
+    --text-body:    1.125rem;
+    --text-body--lh: 1.8;
+    --text-prose:   1.0625rem;
+    --text-prose--lh: 1.9;
+    --text-h1:      2rem;
+    --text-h1--lh:  1.2;
+    --text-h2:      1.5rem;
+    --text-h2--lh:  1.35;
+    --text-h3:      1.25rem;
+    --text-h3--lh:  1.5;
+    --text-code:    0.8125rem;
+    --text-code--lh: 1.6;
+    --text-body-sm: 0.875rem;
+    --text-body-sm--lh: 1.7;
+    --text-small:   0.8125rem;
+    --text-small--lh: 1.35;
+  }
+
+  :root { color-scheme: dark; }
+
+  .light {
+    --bg:           #f7f5f0;
+    --surface:      #ffffff;
+    --surface2:     #f0ede6;
+    --surface3:     #e5e1d8;
+    --border:       #d4cfc6;
+    --border2:      #b8b2a8;
+    --accent:       #3b82f6;
+    --accent2:      #14b8a6;
+    --accent3:      #f59e0b;
+    --accent-red:   #ef4444;
+    --accent-green: #22c55e;
+    --text:         #1c1917;
+    --text-dim:     #57534e;
+    --text-muted:   #a8a29e;
+    --code-bg:      #f7f5f0;
+    --code-border:  #d4cfc6;
+
+    --heavy1:       #ede4d4;
+    --heavy2:       #dce8d4;
+    --heavy3:       #e6def0;
+    --heavy1-accent:#3b82f6;
+    --heavy2-accent:#22c55e;
+    --heavy3-accent:#a855f7;
+
+    --tag-h1-bg:    #ede4d4; --tag-h1-fg: #2563eb;
+    --tag-h2-bg:    #dce8d4; --tag-h2-fg: #16a34a;
+    --tag-h3-bg:    #e6def0; --tag-h3-fg: #9333ea;
+    --tag-all-bg:   #dedcf0; --tag-all-fg: #6366f1;
+
+    color-scheme: light;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--lh);
+    min-height: 100vh;
+  }
+
+  .prose {
+    font-family: var(--font-serif);
+    font-size: var(--text-prose);
+    line-height: var(--text-prose--lh);
+    color: var(--text-dim);
+    margin-bottom: 1.15em;
+  }
+
+  h1, h2, h3, h4, h5, h6,
+  .section-title, .sub-title,
+  .sidebar, .sidebar *, .nav-item,
+  .cover h1, .cover .sub,
+  .sidebar-logo h1 {
+    letter-spacing: 0;
+  }
+
+  /* ── SIDEBAR (RTL) ── */
+  .sidebar {
+    position: fixed;
+    top: 0; right: 0;
+    width: 265px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-logo {
+    padding: 22px 18px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-logo .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--accent2);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+
+  .sidebar-logo h1 {
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.45;
+  }
+
+  .sidebar nav { padding: 10px 0; flex: 1; }
+
+  .nav-group {
+    padding: 14px 18px 5px;
+    font-family: var(--font-sans);
+    font-size: var(--text-small);
+    color: var(--text-muted);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 6px 26px 6px 18px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: var(--text-body-sm);
+    border-right: 2px solid transparent;
+    transition: all .12s;
+    line-height: 1.55;
+  }
+
+  .nav-item.l1 { padding-right: 18px; font-weight: 500; font-size: var(--text-body-sm); }
+  .nav-item.l2 { padding-right: 30px; font-size: var(--text-code); }
+
+  .nav-item:hover {
+    color: var(--text);
+    background: var(--surface2);
+    border-right-color: var(--accent);
+  }
+
+  .nav-item.active {
+    color: var(--text);
+    border-right-color: var(--accent);
+    background: var(--surface2);
+  }
+
+  .sidebar-footer {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: var(--text-small);
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    margin-right: 265px;
+    max-width: 940px;
+    padding: 48px 56px 140px;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    margin-bottom: 60px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cover .breadcrumb {
+    font-family: var(--font-mono);
+    font-size: var(--text-small);
+    color: var(--text-muted);
+    margin-bottom: 18px;
+    letter-spacing: .06em;
+  }
+
+  .cover h1 {
+    font-size: var(--text-h1);
+    font-weight: 700;
+    line-height: var(--text-h1--lh);
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  .cover h1 .hl { color: var(--accent2); }
+
+  .cover .sub {
+    font-size: var(--text-body-sm);
+    color: var(--text-dim);
+    font-weight: 300;
+    max-width: 600px;
+    margin-bottom: 28px;
+    line-height: var(--text-body-sm--lh);
+  }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 11px;
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: var(--text-small);
+    font-weight: 600;
+  }
+
+  .chip-green  { background: #0c2018; color: var(--accent-green); border: 1px solid #1a4030; }
+  .chip-blue   { background: #0f1e38; color: var(--accent);       border: 1px solid #1e3a6a; }
+  .chip-amber  { background: #201400; color: var(--accent3);      border: 1px solid #4a3000; }
+  .chip-red    { background: #1f0a0a; color: var(--accent-red);   border: 1px solid #4a1010; }
+
+  /* ── SECTION / SUBSECTION ── */
+  .section { margin-bottom: 68px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 26px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border-radius: 7px;
+    font-family: var(--font-mono);
+    font-size: var(--text-body);
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: var(--text-h2);
+    font-weight: 600;
+    line-height: var(--text-h2--lh);
+    color: var(--text);
+  }
+
+  .subsection { margin-bottom: 34px; }
+
+  .sub-title {
+    font-size: var(--text-h3);
+    font-weight: 600;
+    line-height: var(--text-h3--lh);
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sub-title::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 15px;
+    background: var(--accent2);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── NODE TAGS ── */
+  .node-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: var(--text-small);
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    vertical-align: middle;
+    margin-bottom: 10px;
+  }
+
+  .tag-all  { background: var(--tag-all-bg); color: var(--tag-all-fg); border: 1px solid #2a2a50; }
+  .tag-h1   { background: var(--tag-h1-bg);  color: var(--tag-h1-fg);  border: 1px solid #2a4880; }
+  .tag-h2   { background: var(--tag-h2-bg);  color: var(--tag-h2-fg);  border: 1px solid #1a4830; }
+  .tag-h3   { background: var(--tag-h3-bg);  color: var(--tag-h3-fg);  border: 1px solid #3a2868; }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 9px;
+    margin: 10px 0 20px;
+    overflow: hidden;
+  }
+
+  .cb-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 14px;
+    background: #0e141e;
+    border-bottom: 1px solid var(--code-border);
+  }
+
+  .cb-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-code);
+    color: var(--text-muted);
+    letter-spacing: .08em;
+  }
+
+  .cb-dots { display: flex; gap: 5px; }
+  .cb-dots span { width: 9px; height: 9px; border-radius: 50%; }
+  .cb-dots span:nth-child(1) { background: #ff5f57; }
+  .cb-dots span:nth-child(2) { background: #ffbd2e; }
+  .cb-dots span:nth-child(3) { background: #28c840; }
+
+  .code-block pre {
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: var(--text-code);
+    line-height: var(--text-code--lh);
+    color: #c9d1d9;
+    direction: ltr;
+    text-align: left;
+  }
+
+  .code-block pre .cm  { color: #6a9955; unicode-bidi: plaintext; }
+  .code-block pre .cm[dir="ltr"] { unicode-bidi: embed; direction: ltr; }
+  .code-block pre .kw  { color: #ff7b72; }
+  .code-block pre .val { color: #d2a8ff; }
+  .code-block pre .str { color: #a5d6ff; }
+  .code-block pre .ph  { color: var(--accent3); }
+
+  /* ── INLINE CODE ── */
+  code {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    background: var(--surface3);
+    color: #7dd3fc;
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    display: flex;
+    gap: 12px;
+    padding: 13px 16px;
+    border-radius: 7px;
+    margin: 14px 0;
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm--lh);
+  }
+
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+  .callout.info    { background: #0a1828; border: 1px solid #1a3a5a; color: #7dd3fc; }
+  .callout.warn    { background: #1a1000; border: 1px solid #4a3000; color: #fcd34d; }
+  .callout.danger  { background: #1a0808; border: 1px solid #4a1010; color: #fca5a5; }
+  .callout.success { background: #081a10; border: 1px solid #1a4028; color: #6ee7b7; }
+
+  /* ── VERIFY ── */
+  .verify {
+    background: #081a10;
+    border: 1px solid #1a4028;
+    border-radius: 7px;
+    padding: 13px 16px;
+    margin: 14px 0 24px;
+  }
+
+  .verify .v-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-small);
+    color: var(--accent-green);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .verify .v-label::before { content: '\2713'; font-size: var(--text-small); }
+
+  .verify p {
+    font-family: var(--font-mono);
+    font-size: var(--text-small);
+    color: #6ee7b7;
+    line-height: 1.7;
+  }
+
+  .verify p[dir="ltr"] { text-align: left; }
+
+  .verify div.mono-text {
+    font-family: var(--font-mono);
+    font-size: var(--text-small);
+    color: #6ee7b7;
+    line-height: 1.7;
+  }
+
+  .mono-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-small);
+    color: #6ee7b7;
+    font-family: var(--font-mono);
+  }
+
+  .mono-table td {
+    padding: 4px 8px;
+    border: 1px solid #1a4028;
+  }
+
+  /* ── BENEFIT CARDS ── */
+  .benefit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 20px 0 30px;
+  }
+
+  .benefit-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 18px 20px;
+  }
+
+  .benefit-card .bc-icon {
+    font-size: 20px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .benefit-card .bc-title {
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 7px;
+  }
+
+  .benefit-card .bc-body {
+    font-size: var(--text-small);
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  .benefit-card.danger {
+    border-color: #5a1515;
+    background: #1a0a0a;
+  }
+
+  .benefit-card.danger .bc-title { color: var(--accent-red); }
+
+  /* ── STEP LISTS ── */
+  .step-list { counter-reset: steps; list-style: none; padding: 0; margin: 10px 0 18px; }
+
+  .step-list li {
+    counter-increment: steps;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+  }
+
+  .step-list li > div { flex: 1; min-width: 0; }
+
+  .step-list li strong {
+    display: block;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: var(--text-body-sm);
+    line-height: 1.5;
+    margin-bottom: 1px;
+  }
+
+  .step-list li .desc {
+    display: block;
+    font-size: var(--text-code);
+    line-height: 1.7;
+    color: var(--text-dim);
+  }
+
+  .step-list li .desc::before { content: '\2022 '; color: var(--text-muted); }
+
+  .step-list li::before {
+    content: counter(steps);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    font-family: var(--font-mono);
+    font-size: var(--text-small);
+    color: var(--accent2);
+    font-weight: 700;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── INFO TABLES ── */
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 24px;
+    font-size: var(--text-body-sm);
+    line-height: 1.8;
+  }
+
+  .info-table th {
+    text-align: right;
+    padding: 12px 16px;
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: var(--text-body-sm);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .info-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    vertical-align: top;
+  }
+
+  .info-table tr:hover td { background: var(--surface2); }
+  .info-table td code { font-size: var(--text-body-sm); }
+
+  /* ── ARCH BOX ── */
+  .arch-box {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 10px 14px;
+    margin: 8px 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-code);
+    line-height: 1.65;
+    overflow-x: auto;
+    direction: ltr;
+    text-align: left;
+  }
+  .arch-box .ab-row {
+    padding: 1px 0;
+    white-space: nowrap;
+  }
+  .arch-box .ab-hl { color: #2a9a78; font-weight: 600; }
+  .arch-box .ab-accent { color: #3a6a9a; font-weight: 600; }
+  .arch-box .ab-dim { color: #4d607a; }
+  .arch-box .ab-dir { color: #5a8aaa; }
+  .arch-box .ab-comment { color: #6a9955; }
+  .arch-box > .arch-box { margin: 6px 0 2px; border-color: #2a4a6a; }
+  .arch-box > .arch-box > .arch-box { border-color: #1a3a5a; }
+
+  .light .arch-box .ab-hl { color: #1a6a50; }
+  .light .arch-box .ab-accent { color: #2a5070; }
+  .light .arch-box .ab-dim { color: #3a4a5a; }
+  .light .arch-box .ab-dir { color: #4a6a8a; }
+  .light .arch-box .ab-comment { color: #5a8a4a; }
+
+  /* ── DIVIDER ── */
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 56px 0;
+  }
+
+  /* ── PUNCTUATION ── */
+  .punct { font-weight: 700; }
+
+  /* ── THEME TOGGLE ── */
+  .theme-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: .12s;
+  }
+  .theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  /* ── LIGHT MODE OVERRIDES ── */
+  .light .chip-green  { background: #eaf5ea; border-color: #86efac; }
+  .light .chip-blue   { background: #eaf1fa; border-color: #93c5fd; }
+  .light .chip-amber  { background: #faf5ea; border-color: #fde68a; }
+  .light .chip-red    { background: #faeaea; border-color: #fca5a5; }
+
+  .light .tag-all  { border-color: #a5b4fc; }
+  .light .tag-h1   { border-color: #818cf8; }
+  .light .tag-h2   { border-color: #6ee7b7; }
+  .light .tag-h3   { border-color: #c4b5fd; }
+
+  .light .cb-head  { background: var(--surface2); }
+
+  .light .code-block pre     { color: #1e293b; }
+  .light .code-block pre .cm { color: #6a9955; }
+  .light .code-block pre .kw { color: #991b1b; }
+  .light .code-block pre .val{ color: #6b21a8; }
+  .light .code-block pre .str{ color: #1e3a8a; }
+  .light code { color: #1e3a8a; }
+
+  .light .callout.info    { background: #eaf1fa; border-color: #93c5fd; color: #1e40af; }
+  .light .callout.warn    { background: #faf5ea; border-color: #fde68a; color: #92400e; }
+  .light .callout.danger  { background: #faeaea; border-color: #fca5a5; color: #991b1b; }
+  .light .callout.success { background: #eaf5ea; border-color: #86efac; color: #166534; }
+
+  .light .verify { background: #eaf5ea; border-color: #86efac; }
+  .light .verify p,
+  .light .verify div.mono-text,
+  .light .mono-table { color: #16a34a; }
+  .light .mono-table td { border-color: #86efac; }
+
+  .light .benefit-card.danger { border-color: #fca5a5; background: #faeaea; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-right: 0; padding: 24px 20px 80px; }
+    .benefit-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    .sidebar {
+      position: static;
+      float: right;
+      width: 280px;
+      height: auto;
+      border-left: none;
+      border-right: 1px solid var(--border);
+    }
+    .sidebar nav { font-size: 11px; }
+    .sidebar-logo { padding: 12px 14px; }
+    .sidebar-logo .eyebrow { font-size: 8px; }
+    .sidebar-logo h1 { font-size: 13px; }
+    .nav-group { padding: 8px 14px 3px; font-size: 9px; }
+    .nav-item { padding: 4px 14px; font-size: 11px; }
+    .sidebar-footer { display: none; }
+    .theme-toggle { display: none; }
+    .main {
+      margin-right: 0;
+      overflow: hidden;
+      padding: 24px 36px;
+      max-width: none;
+    }
+    .code-block { break-inside: avoid; }
+    .section, .subsection, .callout, .verify, .benefit-grid { page-break-inside: avoid; }
+    .cover { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="eyebrow">GitHub Actions Guide</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <h1>دليل GitHub Actions الشامل</h1>
+      <button id="theme-toggle" class="theme-toggle" style="margin-top:0;flex-shrink:0;">🌙</button>
+      <button id="lang-toggle" class="theme-toggle" style="margin-top:0;flex-shrink:0;">English</button>
+    </div>
+  </div>
+  <nav>
+    <a class="nav-item l1" href="../../" style="border-right-color:var(--accent2);margin-bottom:4px;">← الرجوع للرئيسية</a>
+    <div class="nav-group">المفاهيم <span class="punct"> — </span> Concepts</div>
+    <a class="nav-item l1" href="#what-is">1<span class="punct"> . </span> ما هو GitHub Actions<span class="punct"> ؟ </span></a>
+    <a class="nav-item l1" href="#first-workflow">2<span class="punct"> . </span> أول Workflow لك</a>
+
+    <div class="nav-group">البنية <span class="punct"> — </span> YAML</div>
+    <a class="nav-item l1" href="#yaml-structure">3<span class="punct"> . </span> بنية YAML <span class="punct"> — </span> شرح كل كلمة</a>
+    <a class="nav-item l2" href="#yaml-on">on <span class="punct"> — </span> متى يشتغل<span class="punct"> ؟ </span></a>
+    <a class="nav-item l2" href="#yaml-jobs">jobs <span class="punct"> — </span> المهام</a>
+    <a class="nav-item l2" href="#yaml-steps">steps <span class="punct"> — </span> الخطوات</a>
+    <a class="nav-item l2" href="#yaml-runs-on">runs-on <span class="punct"> — </span> على إيه يشتغل<span class="punct"> ؟ </span></a>
+    <a class="nav-item l2" href="#yaml-needs">needs <span class="punct"> — </span> ترتيب المهام</a>
+    <a class="nav-item l2" href="#yaml-matrix">matrix <span class="punct"> — </span> تشغيل متعدد</a>
+    <a class="nav-item l2" href="#yaml-env">env <span class="punct"> — </span> المتغيرات</a>
+    <a class="nav-item l2" href="#yaml-permissions">permissions <span class="punct"> — </span> الصلاحيات</a>
+    <a class="nav-item l2" href="#yaml-if">if <span class="punct"> — </span> الشروط</a>
+    <a class="nav-item l2" href="#yaml-defaults">defaults <span class="punct"> — </span> الإعدادات</a>
+
+    <div class="nav-group">التطبيق <span class="punct"> — </span> Practical</div>
+    <a class="nav-item l1" href="#theory-to-practice">4<span class="punct"> . </span> من النظري للعملي</a>
+    <a class="nav-item l1" href="#runners">5<span class="punct"> . </span> GitHub-hosted vs Self-hosted</a>
+    <a class="nav-item l1" href="#linking">6<span class="punct"> . </span> ربط ملفات YAML</a>
+
+    <div class="nav-group">خبير <span class="punct"> — </span> Advanced</div>
+    <a class="nav-item l1" href="#mistakes">7<span class="punct"> . </span> الأخطاء الشائعة &amp; Debugging</a>
+    <a class="nav-item l1" href="#context">8<span class="punct"> . </span> Context Objects</a>
+    <a class="nav-item l1" href="#security">9<span class="punct"> . </span> الأمان في GitHub Actions</a>
+
+    <div class="nav-group">الأسئلة <span class="punct"> — </span> Interview</div>
+    <a class="nav-item l1" href="#interview">10<span class="punct"> . </span> أسئلة المقابلات</a>
+    <a class="nav-item l1" href="#quickref">11<span class="punct"> . </span> Quick Reference</a>
+  </nav>
+  <div class="sidebar-footer">
+    دليل شامل لـ GitHub Actions<br>
+    CI/CD · YAML · DevOps<br>
+    إعداد<span class="punct"> : </span> مرجع تعليمي
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- ═══════════════════════════════════════
+       COVER
+  ═══════════════════════════════════════ -->
+  <div class="cover">
+    <div class="breadcrumb">devops / ci-cd / github-actions</div>
+    <h1>دليل GitHub Actions الشامل<br><span class="hl">من الصفر إلى CI/CD</span></h1>
+    <p class="prose">
+      GitHub Actions هو نظام CI/CD مدمج في GitHub يخلّيك تبني وتختبر وتنشر كودك تلقائيا<span class="punct"> . </span>
+      الدليل ده مصمم للمبتدئين اللي معندهمش أي خلفية عن CI/CD أو YAML<span class="punct"> . </span>
+      هنشرح كل مفهوم من الصفر مع أمثلة عملية<span class="punct"> . </span>
+    </p>
+    <div class="chip-row">
+      <span class="chip chip-green">CI/CD</span>
+      <span class="chip chip-blue">GitHub Actions</span>
+      <span class="chip chip-amber">YAML</span>
+      <span class="chip chip-red">DevOps</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 1 — WHAT IS GITHUB ACTIONS?
+  ═══════════════════════════════════════ -->
+  <section class="section" id="what-is">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent2);color:#000;">1</div>
+      <h2 class="section-title">ما هو GitHub Actions<span class="punct"> ؟ </span></h2>
+    </div>
+
+    <p class="prose">
+      GitHub Actions هو نظام CI/CD <span class="punct"> ( </span>Continuous Integration / Continuous Deployment<span class="punct"> ) </span> مدمج في GitHub<span class="punct"> . </span>
+      ببساطة<span class="punct"> : </span> أي حاجة بتعملها بإيدك بعد ما تعمل push <span class="punct"> — </span> زي إنك تشغل tests أو تنشر الموقع <span class="punct"> — </span> تقدر تخلي GitHub يعملها
+      تلقائيا<span class="punct"> . </span>
+    </p>
+
+    <div class="benefit-grid">
+      <div class="benefit-card">
+        <span class="bc-icon">❌</span>
+        <div class="bc-title">قبل CI/CD <span class="punct"> — </span> يدوي</div>
+        <div class="bc-body">
+          تعمل push ← تفتح terminal ← تشغل tests ← تبني ← ترفع على السيرفر<span class="punct"> . </span>
+          يضيع وقت<span class="punct"> ، </span> تنسى خطوة<span class="punct"> ، </span> يحصل خطأ<span class="punct"> . </span>
+        </div>
+      </div>
+      <div class="benefit-card">
+        <span class="bc-icon">✅</span>
+        <div class="bc-title">بعد CI/CD <span class="punct"> — </span> تلقائي</div>
+        <div class="bc-body">
+          تعمل push ← GitHub يشغل tests ← يبني ← ينشر تلقائيا<span class="punct"> . </span>
+          أنت بس تركز على الكود<span class="punct"> . </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="sub-title">معمارية GitHub Actions</div>
+
+      <div class="arch-box">
+  <div class="ab-row"><span class="ab-hl">Workflow</span> ( الملف كله - .github/workflows/*.yml )</div>
+  <div class="arch-box">
+    <div class="ab-row"><span class="ab-accent">Job 1</span> (مثلا: build — بيشتغل على Ubuntu)</div>
+    <div class="arch-box">
+      <div class="ab-row">Step 1: actions/checkout (جيب الكود)</div>
+      <div class="ab-row">Step 2: actions/setup-node (ثبت Node)</div>
+      <div class="ab-row">Step 3: run: npm ci (نزل الحزم)</div>
+      <div class="ab-row">Step 4: run: npm run build (ابني)</div>
+    </div>
+  </div>
+  <div class="arch-box">
+    <div class="ab-row"><span class="ab-accent">Job 2</span> (مثلا: deploy — محتاج Job 1 يخلص)</div>
+    <div class="arch-box">
+      <div class="ab-row">Step 1: download artifact (جيب الملفات)</div>
+      <div class="ab-row">Step 2: deploy to server (انشر)</div>
+    </div>
+  </div>
+</div>
+    </div>
+
+    <div class="subsection">
+      <div class="sub-title">المفاهيم الأساسية</div>
+
+      <table class="info-table">
+        <thead>
+          <tr><th>المصطلح</th><th>الشرح</th><th>مثال</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Workflow</td><td>ملف YAML بيحدد الأتمتة كلها</td><td><code>.github/workflows/deploy.yml</code></td></tr>
+          <tr><td>Job</td><td>مجموعة steps بتشتغل على نفس الـ runner</td><td><code>build</code><span class="punct"> , </span> <code>test</code><span class="punct"> , </span> <code>deploy</code></td></tr>
+          <tr><td>Step</td><td>أمر أو action واحد داخل job</td><td><code>run: npm test</code></td></tr>
+          <tr><td>Action</td><td>وحدة reusable <span class="punct"> — </span> بتيجي من GitHub Marketplace</td><td><code>actions/checkout@v4</code></td></tr>
+          <tr><td>Runner</td><td>السيرفر اللي بيشتغل عليه الـ workflow</td><td><code>ubuntu-latest</code><span class="punct"> , </span> <code>self-hosted</code></td></tr>
+          <tr><td>Event</td><td>الحدث اللي بيشغل الـ workflow</td><td><code>push</code><span class="punct"> , </span> <code>pull_request</code><span class="punct"> , </span> <code>schedule</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ</span>
+      <div>
+        <strong>خلينا نتفق على حاجة<span class="punct"> : </span></strong> الـ Workflow هو الملف كله<span class="punct"> . </span>
+        الـ Job هو مهمة معينة داخل الملف<span class="punct"> . </span> الـ Step هو سطر واحد في المهمة<span classpunct"> <span class="punct"> . </span> </span>
+        متحفظش الكلام ده <span class="punct"> — </span> افهم العلاقة بينهم وهترسمها في دماغك<span class="punct"> . </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 2 — FIRST WORKFLOW
+  ═══════════════════════════════════════ -->
+  <section class="section" id="first-workflow">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">2</div>
+      <h2 class="section-title">أول Workflow لك</h2>
+    </div>
+
+    <p class="prose">
+      خلينا نبدأ بأصغر Workflow ممكن <span class="punct"> — </span> يطبع رسالة لما تعمل push<span class="punct"> . </span>
+      مش محتاج غير ملف واحد في المكان الصح<span class="punct"> . </span>
+    </p>
+
+    <div class="subsection">
+      <div class="sub-title">أين تنشئ الملف<span class="punct"> ؟ </span></div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">المسار الإجباري</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># أنشئ الفولدر ده في نفس مسار الـ repo بتاعك</span>
+mkdir -p .github/workflows/
+
+<span class="cm"># بعدين أنشئ ملف .github/workflows/first.yml</span>
+touch .github/workflows/first.yml</pre>
+      </div>
+
+      <div class="callout warn">
+        <span class="callout-icon">⚠</span>
+        <div>
+          <strong>مهم جدا<span class="punct"> : </span></strong> الملف لازم يكون جوا <code>.github/workflows/</code> بالظبط<span class="punct"> . </span>
+          لو حطيته في أي مكان تاني<span class="punct"> , </span> GitHub مش هيعرف يقراه<span class="punct"> . </span>
+          الإمتداد يكون <code>.yml</code> أو <code>.yaml</code><span class="punct"> . </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="sub-title">أقل Workflow ممكن</div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">first.yml <span class="punct"> — </span> Hello World</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># اسم الـ Workflow (بيظهر في GitHub)</span>
+<span class="kw">name</span>: <span class="str">Hello World</span>
+
+<span class="cm"># متى يشتغل؟</span>
+<span class="kw">on</span>:
+  <span class="kw">push</span>:                      <span class="cm"># أي push على أي branch</span>
+
+<span class="cm"># المهام</span>
+<span class="kw">jobs</span>:
+  <span class="kw">hello</span>:                     <span class="cm"># اسم الـ job (أي اسم)</span>
+    <span class="kw">runs-on</span>: <span class="str">ubuntu-latest</span> <span class="cm"># السيرفر اللي هيشتغل عليه</span>
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: <span class="str">echo "Hello from GitHub Actions!"</span></pre>
+      </div>
+
+      <p class="prose">
+        بعد ما تعمل push للملف ده<span class="punct"> , </span> روح لـ GitHub ← تبويب <strong>Actions</strong> ← هتشوف
+        الـ Workflow شغال<span class="punct"> . </span> دوس عليه وشوف الـ logs<span class="punct"> . </span>
+      </p>
+    </div>
+
+    <div class="subsection">
+      <div class="sub-title">إزاي تشوف النتيجة<span class="punct"> ؟ </span></div>
+
+      <ol class="step-list">
+        <li>
+          <div>
+            <strong>أعمل push للملف</strong>
+            <span class="desc">خلي الملف في <code>.github/workflows/first.yml</code> واعمل commit + push<span class="punct"> . </span></span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>افتح GitHub <span class="punct"> ( </span>الـ repo بتاعك<span class="punct"> ) </span></strong>
+            <span class="desc">هتلاقي تبويب اسمه <strong>Actions</strong> في أعلى الصفحة <span class="punct"> — </span> دوس عليه<span class="punct"> . </span></span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>شوف الـ Workflow بيشتغل</strong>
+            <span class="desc">هتلاقي <span class="punct"> " </span>Hello World<span class="punct"> " </span> في القائمة <span class="punct"> — </span> دوس عليه وشوف الـ logs live<span class="punct"> . </span></span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>لما يطلع علامة خضرا ✅ <span class="punct"> — </span> مبروك<span class="punct"> ! </span></strong>
+            <span class="desc">أول Workflow لك شغال<span class="punct"> ! </span> طبع <span class="punct"> " </span>Hello from GitHub Actions<span class="punct"> ! </span><span class="punct"> " </span> في الـ log<span class="punct"> . </span></span>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="verify">
+      <div class="v-label">الخلاصة</div>
+      <p dir="ltr">Workflow = YAML file in <code>.github/workflows/</code><span class="punct"> , </span> triggered by an Event<span class="punct"> , </span> runs Jobs with Steps on a Runner<span class="punct"> . </span></p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 3 — YAML STRUCTURE
+  ═══════════════════════════════════════ -->
+  <section class="section" id="yaml-structure">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2 class="section-title">بنية YAML <span class="punct"> — </span> شرح كل كلمة</h2>
+    </div>
+
+    <p class="prose">
+      خلينا ناخد كل keyword في YAML ونفهمه لوحده<span class="punct"> . </span> كل كلمة ليها دور معين في الـ workflow<span class="punct"> . </span>
+      مش محتاج تحفظ <span class="punct"> — </span> افهم الدور وهتعرف تستخدمه<span class="punct"> . </span>
+    </p>
+
+    <!-- 3.1 on -->
+    <div class="subsection" id="yaml-on">
+      <div class="sub-title">on <span class="punct"> — </span> متى يشتغل الـ Workflow<span class="punct"> ؟ </span></div>
+
+      <p class="prose">
+        دي أول كلمة في الـ workflow<span class="punct"> . </span> بتحدد <strong>الحدث</strong> اللي يشغل الملف<span class="punct"> . </span>
+        ممكن يكون push<span class="punct"> ، </span> pull_request<span class="punct"> ، </span> schedule <span class="punct"> ( </span>مؤقت<span class="punct"> ) </span><span class="punct"> ، </span> أو يدوي <span class="punct"> ( </span>workflow_dispatch<span class="punct"> ) </span><span class="punct"> . </span>
+      </p>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">أمثلة on</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># على كل push</span>
+<span class="kw">on</span>: <span class="str">push</span>
+
+<span class="cm"># على push لـ main أو dev بس</span>
+<span class="kw">on</span>:
+  <span class="kw">push</span>:
+    <span class="kw">branches</span>: [<span class="str">main</span>, <span class="str">dev</span>]
+
+<span class="cm"># على pull_request لـ main</span>
+<span class="kw">on</span>:
+  <span class="kw">pull_request</span>:
+    <span class="kw">branches</span>: [<span class="str">main</span>]
+
+<span class="cm"># جدول زمني — كل يوم 12 midnight UTC</span>
+<span class="kw">on</span>:
+  <span class="kw">schedule</span>:
+    - <span class="kw">cron</span>: <span class="str">'0 0 * * *'</span>
+
+<span class="cm"># يدوي — زرار في GitHub</span>
+<span class="kw">on</span>:
+  <span class="kw">workflow_dispatch</span>:
+    <span class="kw">inputs</span>:
+      <span class="kw">env</span>:
+        <span class="kw">description</span>: <span class="str">'Environment'</span>
+        <span class="kw">required</span>: <span class="val">true</span>
+        <span class="kw">default</span>: <span class="str">'staging'</span></pre>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ</span>
+        <div>
+          <strong>معلومة<span class="punct"> : </span></strong> تقدر تجمع أكتر من event في نفس الـ workflow<span class="punct"> . </span>
+          مثلا يشتغل على push <strong>و</strong> pull_request في نفس الوقت<span class="punct"> . </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.2 jobs -->
+    <div class="subsection" id="yaml-jobs">
+      <div class="sub-title">jobs <span class="punct"> — </span> المهام</div>
+
+      <p class="prose">
+        كل workflow فيه job أو أكتر<span class="punct"> . </span> كل job بتشتغل على <strong>runner</strong> منفصل <span class="punct"> ( </span>سيرفر مستقل<span class="punct"> ) </span><span class="punct"> . </span>
+        انت بتسمي الـ job أي اسم يناسبك <span class="punct"> — </span> من غير مسافات<span class="punct"> . </span>
+      </p>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">jobs <span class="punct"> — </span> basic</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">jobs</span>:
+  <span class="kw">build</span>:           <span class="cm"># ⬅️ أي اسم تختاره</span>
+    <span class="kw">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="kw">steps</span>: [ ... ]
+
+  <span class="kw">deploy</span>:          <span class="cm"># ⬅️ job تاني</span>
+    <span class="kw">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="kw">steps</span>: [ ... ]</pre>
+      </div>
+
+      <table class="info-table">
+        <thead>
+          <tr><th>الخاصية</th><th>الشرح</th><th>مثال</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>runs-on</code></td><td>نوع الـ runner</td><td><code>ubuntu-latest</code><span class="punct"> , </span> <code>windows-latest</code></td></tr>
+          <tr><td><code>needs</code></td><td>الـ job اللي لازم يخلص الأول</td><td><code>needs: build</code></td></tr>
+          <tr><td><code>if</code></td><td>شرط التشغيل</td><td><code>if: github.ref == 'refs/heads/main'</code></td></tr>
+          <tr><td><code>strategy</code></td><td>تكرار الـ job بقيم مختلفة</td><td><code>matrix</code></td></tr>
+          <tr><td><code>env</code></td><td>متغيرات للـ job كله</td><td><code>env: NODE_ENV: test</code></td></tr>
+          <tr><td><code>permissions</code></td><td>صلاحيات الـ job</td><td><code>permissions: contents: read</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 3.3 steps -->
+    <div class="subsection" id="yaml-steps">
+      <div class="sub-title">steps <span class="punct"> — </span> الخطوات</div>
+
+      <p class="prose">
+        كل job فيه steps بتتنفذ <strong>بالترتيب</strong> <span class="punct"> ( </span>واحدة ورا التانية<span class="punct"> ) </span><span class="punct"> . </span>
+        لو step فشلت<span class="punct"> , </span> الباقي مش هيتنفذ <span class="punct"> ( </span>إلا لو حطيت <code>continue-on-error: true</code><span class="punct"> ) </span><span class="punct"> . </span>
+      </p>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">أنواع الـ steps</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">steps</span>:
+  <span class="cm"># use — استخدم action جاهز من GitHub</span>
+  - <span class="kw">uses</span>: <span class="str">actions/checkout@v4</span>
+
+  <span class="cm"># run — أمر shell مباشر</span>
+  - <span class="kw">name</span>: <span class="str">Install dependencies</span>
+    <span class="kw">run</span>: <span class="str">npm ci</span>
+
+  <span class="cm"># with — parameters للـ action</span>
+  - <span class="kw">uses</span>: <span class="str">actions/setup-node@v4</span>
+    <span class="kw">with</span>:
+      <span class="kw">node-version</span>: <span class="str">'20'</span>
+
+  <span class="cm"># run مع multi-line</span>
+  - <span class="kw">name</span>: <span class="str">Build and test</span>
+    <span class="kw">run</span>: <span class="str">|</span>
+<span class="str">      npm run build</span>
+<span class="str">      npm test</span>
+
+  <span class="cm"># if — شرط للـ step</span>
+  - <span class="kw">if</span>: <span class="str">failure()</span>
+    <span class="kw">run</span>: <span class="str">echo "Something failed!"</span></pre>
+      </div>
+    </div>
+
+    <!-- 3.4 runs-on -->
+    <div class="subsection" id="yaml-runs-on">
+      <div class="sub-title">runs-on <span class="punct"> — </span> على إيه يشتغل الـ Job<span class="punct"> ؟ </span></div>
+
+      <p class="prose">
+        كل job محتاج سيرفر يشتغل عليه<span class="punct"> . </span> أنت بتختار نوع السيرفر ده<span class="punct"> . </span>
+        GitHub-hosted بتوع GitHub<span class="punct"> ، </span> و Self-hosted بتوعك أنت<span class="punct"> . </span>
+      </p>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">runs-on <span class="punct"> — </span> options</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">jobs</span>:
+  <span class="kw">linux</span>:
+    <span class="kw">runs-on</span>: <span class="str">ubuntu-latest</span>   <span class="cm"># أو ubuntu-22.04</span>
+
+  <span class="kw">windows</span>:
+    <span class="kw">runs-on</span>: <span class="str">windows-latest</span> <span class="cm"># أو windows-2022</span>
+
+  <span class="kw">mac</span>:
+    <span class="kw">runs-on</span>: <span class="str">macos-latest</span>   <span class="cm"># أو macos-14</span>
+
+  <span class="kw">private</span>:
+    <span class="kw">runs-on</span>: <span class="str">self-hosted</span>    <span class="cm"># على جهازك أنت</span></pre>
+      </div>
+    </div>
+
+    <!-- 3.5 needs -->
+    <div class="subsection" id="yaml-needs">
+      <div class="sub-title">needs <span class="punct"> — </span> ترتيب الـ Jobs</div>
+
+      <p class="prose">
+        بشكل افتراضي<span class="punct"> , </span> كل الـ jobs بتشتغل <strong>بالتوازي</strong> <span class="punct"> ( </span>كل job على runner لوحدها في نفس الوقت<span class="punct"> ) </span><span class="punct"> . </span>
+        <code>needs</code> بيخلي job تستنى job تانية تخلص الأول<span class="punct"> . </span>
+      </p>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">needs <span class="punct"> — </span> dependencies</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">jobs</span>:
+  <span class="kw">build</span>:
+    <span class="kw">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: <span class="str">echo "Building..."</span>
+
+  <span class="kw">test</span>:
+    <span class="kw">needs</span>: <span class="str">build</span>            <span class="cm"># ⬅️ يستنى build يخلص</span>
+    <span class="kw">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: <span class="str">echo "Testing..."</span>
+
+  <span class="kw">deploy</span>:
+    <span class="kw">needs</span>: [<span class="str">build</span>, <span class="str">test</span>] <span class="cm"># ⬅️ يستنى build و test</span>
+    <span class="kw">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: <span class="str">echo "Deploying..."</span></pre>
+      </div>
+
+      <div class="callout success">
+        <span class="callout-icon">💡</span>
+        <div>
+          <strong>شكل التدفق<span class="punct"> : </span></strong>
+          <code>build</code> ← <code>test</code> ← <code>deploy</code><span class="punct"> . </span>
+          لو build فشل<span class="punct"> , </span> test مش هيتشغل أصلا<span class="punct"> . </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.6 matrix -->
+    <div class="subsection" id="yaml-matrix">
+      <div class="sub-title">strategy.matrix <span class="punct"> — </span> تشغيل متعدد</div>
+
+      <p class="prose">
+        الـ matrix يخلّيك تكرر نفس الـ job بقيم مختلفة <span class="punct"> ( </span>مثلا تختبر على 3 أنظمة تشغيل و 3 نسخ Node في نفس الوقت<span class="punct"> ) </span><span class="punct"> . </span>
+      </p>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">Matrix <span class="punct"> — </span> OS × Node</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">jobs</span>:
+  <span class="kw">test</span>:
+    <span class="kw">strategy</span>:
+      <span class="kw">fail-fast</span>: <span class="val">false</span>    <span class="cm"># لو واحد فشل، الباقي يكمل</span>
+      <span class="kw">matrix</span>:
+        <span class="kw">os</span>: [<span class="str">ubuntu-latest</span>, <span class="str">windows-latest</span>, <span class="str">macos-latest</span>]
+        <span class="kw">node</span>: [<span class="str">18</span>, <span class="str">20</span>, <span class="str">22</span>]
+
+    <span class="kw">runs-on</span>: <span class="str">${{ matrix.os }}</span>
+
+    <span class="kw">steps</span>:
+      - <span class="kw">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="kw">uses</span>: <span class="str">actions/setup-node@v4</span>
+        <span class="kw">with</span>:
+          <span class="kw">node-version</span>: <span class="str">${{ matrix.node }}</span>
+      - <span class="kw">run</span>: <span class="str">npm ci && npm test</span></pre>
+      </div>
+
+      <p class="prose">
+        الـ code ده هينتج <strong>9 runs</strong> <span class="punct"> ( </span>3 OS × 3 Node versions<span class="punct"> ) </span> <span class="punct"> — </span> كلهم بيشتغلوا بالتوازي<span class="punct"> . </span>
+        تقدر تضيف <code>include</code> أو <code>exclude</code> عشان تتحكم في الـ combinations<span class="punct"> . </span>
+      </p>
+    </div>
+
+    <!-- 3.7 env -->
+    <div class="subsection" id="yaml-env">
+      <div class="sub-title">env <span class="punct"> — </span> المتغيرات</div>
+
+      <p class="prose">
+        تقدر تعرّف متغيرات على 3 مستويات<span class="punct"> : </span> للـ workflow كله <span class="punct"> ( </span>global<span class="punct"> ) </span><span class="punct"> ، </span> للـ job<span class="punct"> ، </span> أو للـ step واحد<span class="punct"> . </span>
+      </p>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">env <span class="punct"> — </span> 3 levels</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># Global — لكل الـ workflow</span>
+<span class="kw">env</span>:
+  <span class="kw">APP_NAME</span>: <span class="str">my-app</span>
+  <span class="kw">NODE_ENV</span>: <span class="str">production</span>
+
+<span class="kw">jobs</span>:
+  <span class="kw">build</span>:
+    <span class="cm"># Job level — للـ job ده بس</span>
+    <span class="kw">env</span>:
+      <span class="kw">BUILD_DIR</span>: <span class="str">./dist</span>
+
+    <span class="kw">steps</span>:
+      - <span class="kw">name</span>: <span class="str">Build</span>
+        <span class="cm"># Step level — للـ step ده بس</span>
+        <span class="kw">env</span>:
+          <span class="kw">API_URL</span>: <span class="str">https://api.example.com</span>
+        <span class="kw">run</span>: <span class="str">echo $APP_NAME $BUILD_DIR $API_URL</span></pre>
+      </div>
+    </div>
+
+    <!-- 3.8 permissions -->
+    <div class="subsection" id="yaml-permissions">
+      <div class="sub-title">permissions <span class="punct"> — </span> الصلاحيات</div>
+
+      <p class="prose">
+        بتحدد صلاحيات الـ GITHUB_TOKEN <span class="punct"> ( </span>التوكن اللي GitHub بيديه للـ workflow<span class="punct"> ) </span><span class="punct"> . </span>
+        أحسن ممارسة <span class="punct"> ( </span>best practice<span class="punct"> ) </span> إنك تقلل الصلاحيات قد ما تقدر<span class="punct"> . </span>
+      </p>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">permissions <span class="punct"> — </span> examples</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># أقل صلاحية — قراءة فقط (الأفضل)</span>
+<span class="kw">permissions</span>:
+  <span class="kw">contents</span>: <span class="str">read</span>
+
+<span class="cm"># للـ job واحد بس</span>
+<span class="kw">jobs</span>:
+  <span class="kw">deploy</span>:
+    <span class="kw">permissions</span>:
+      <span class="kw">contents</span>: <span class="str">read</span>
+      <span class="kw">pages</span>: <span class="str">write</span>      <span class="cm"># عشان النشر على GitHub Pages</span>
+      <span class="kw">id-token</span>: <span class="str">write</span></pre>
+      </div>
+    </div>
+
+    <!-- 3.9 if -->
+    <div class="subsection" id="yaml-if">
+      <div class="sub-title">if <span class="punct"> — </span> الشروط</div>
+
+      <p class="prose">
+        بتستخدم <code>if</code> عشان تتحكم في job أو step <span class="punct"> — </span> يشتغل بس لو الشرط تحقق<span class="punct"> . </span>
+        تقدر تستخدم متغيرات <code>github</code> <span class="punct"> ( </span>زي <code>github.ref</code><span class="punct"> ) </span> أو دوال زي <code>failure()</code> و <code>always()</code><span class="punct"> . </span>
+      </p>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">if <span class="punct"> — </span> conditions</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># Job condition — بس على main</span>
+<span class="kw">jobs</span>:
+  <span class="kw">deploy</span>:
+    <span class="kw">if</span>: <span class="str">github.ref == 'refs/heads/main'</span>
+
+    <span class="kw">steps</span>:
+      <span class="cm"># Step condition</span>
+      - <span class="kw">if</span>: <span class="str">failure()</span>       <span class="cm"># بس لو حصل فشل</span>
+        <span class="kw">run</span>: <span class="str">echo "Failed!"</span>
+
+      - <span class="kw">if</span>: <span class="str">always()</span>        <span class="cm"># دايما — حتى لو فشل</span>
+        <span class="kw">run</span>: <span class="str">echo "Cleanup..."</span>
+
+      - <span class="kw">if</span>: <span class="str">success()</span>       <span class="cm"># لو نجح — دا السلوك الافتراضي</span>
+        <span class="kw">run</span>: <span class="str">echo "All good!"</span></pre>
+      </div>
+
+      <table class="info-table">
+        <thead>
+          <tr><th>المتغير</th><th>القيمة مثال</th><th>الشرح</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>github.ref</code></td><td><code>refs/heads/main</code></td><td>الـ branch أو tag الحالي</td></tr>
+          <tr><td><code>github.event_name</code></td><td><code>push</code><span class="punct"> , </span> <code>pull_request</code></td><td>الحدث اللي شغّل الـ workflow</td></tr>
+          <tr><td><code>github.actor</code></td><td><code>khaled</code></td><td>اسم اليوزر اللي عمل الحدث</td></tr>
+          <tr><td><code>github.repository</code></td><td><code>owner/repo</code></td><td>الـ repo الحالي</td></tr>
+          <tr><td><code>github.sha</code></td><td><code>abc123...</code></td><td>الـ commit hash</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 3.10 defaults -->
+    <div class="subsection" id="yaml-defaults">
+      <div class="sub-title">defaults <span class="punct"> — </span> الإعدادات الافتراضية</div>
+
+      <p class="prose">
+        بتحدد إعدادات افتراضية لكل الـ <code>run</code> steps <span class="punct"> — </span> زي shell أو working directory<span class="punct"> . </span>
+        بدل ما تكرر نفس الإعدادات في كل step<span class="punct"> . </span>
+      </p>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">defaults</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">defaults</span>:
+  <span class="kw">run</span>:
+    <span class="kw">shell</span>: <span class="str">bash</span>
+    <span class="kw">working-directory</span>: <span class="str">./app</span>
+
+<span class="kw">jobs</span>:
+  <span class="kw">build</span>:
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: <span class="str">pwd</span>  <span class="cm"># هيكون في ./app</span>
+      - <span class="kw">run</span>: <span class="str">ls</span>   <span class="cm"># هيكون في ./app</span></pre>
+      </div>
+    </div>
+
+    <!-- ملخص YAML -->
+    <div class="subsection">
+      <div class="sub-title">ملخص سريع لكل YAML</div>
+
+      <div class="code-block h1">
+        <div class="cb-head">
+          <span class="cb-label">Full Workflow Template</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">name</span>: <span class="str">Workflow Name</span>     <span class="cm"># اسم الـ workflow</span>
+
+<span class="kw">on</span>: [<span class="str">push</span>]                <span class="cm"># متى يشتغل؟</span>
+
+<span class="kw">env</span>:                      <span class="cm"># متغيرات عامة</span>
+  <span class="kw">KEY</span>: <span class="str">value</span>
+
+<span class="kw">jobs</span>:                     <span class="cm"># المهام</span>
+  <span class="kw">job-name</span>:               <span class="cm"># اسم الـ job (أي اسم)</span>
+    <span class="kw">runs-on</span>: <span class="str">ubuntu-latest</span> <span class="cm"># نوع الـ runner</span>
+    <span class="kw">needs</span>: [<span class="str">job1</span>]           <span class="cm"># dependencies</span>
+    <span class="kw">if</span>: <span class="str">github.ref == '...'</span> <span class="cm"># شرط</span>
+    <span class="kw">permissions</span>: {}          <span class="cm"># صلاحيات</span>
+
+    <span class="kw">steps</span>:                   <span class="cm"># الخطوات</span>
+      - <span class="kw">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="kw">name</span>: <span class="str">Description</span>
+        <span class="kw">run</span>: <span class="str">command</span>
+        <span class="kw">env</span>:                    <span class="cm"># متغيرات للـ step</span>
+          <span class="kw">KEY</span>: <span class="str">value</span>
+        <span class="kw">if</span>: <span class="str">condition</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ═══════════════════════════════════════
+       SECTION 4 — THEORY TO PRACTICE
+  ═══════════════════════════════════════ -->
+  <section class="section" id="theory-to-practice">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent2);color:#000;">4</div>
+      <h2 class="section-title">من النظري للعملي</h2>
+    </div>
+
+    <p class="prose">
+      خلينا نطبق اللي اتعلمناه على سيناريو حقيقي<span class="punct"> : </span> موقع React <span class="punct"> ( </span>أو Vue أو أي SPA<span class="punct"> ) </span> عايزين نبنيه وننشره على
+      GitHub Pages <span class="punct"> — </span> كل ما تعمل push على main<span class="punct"> . </span>
+    </p>
+
+    <div class="subsection">
+      <div class="sub-title">السيناريو <span class="punct"> — </span> 7 خطوات</div>
+
+      <div class="callout info">
+        <span class="callout-icon">📖</span>
+        <div>
+          <strong>القصة<span class="punct"> : </span></strong> أنت developer عندك موقع React<span class="punct"> . </span> بتكتب كود<span class="punct"> , </span> تعمل push<span class="punct"> , </span> وعايز الموقع ينشر تلقائيا من غير ما تفتح terminal أو تدوس أي زرار<span class="punct"> . </span>
+        </div>
+      </div>
+
+      <ol class="step-list">
+        <li>
+          <div>
+            <strong>أنت بتعمل<span class="punct"> : </span> git push origin main</strong>
+            <span class="desc">GitHub يستقبل الـ push ويعرف إن فيه event حصل على main<span class="punct"> . </span></span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>GitHub يدور على ملفات الـ Workflow</strong>
+            <span class="desc">بيروح لـ <code>.github/workflows/</code> ويلاقي ملف <code>deploy.yml</code> <span class="punct"> — </span> يبدا يقراه<span class="punct"> . </span></span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>GitHub يوفّر Runner</strong>
+            <span class="desc">بيجهز سيرفر <code>ubuntu-latest</code> عليه Git و Node.js وجاهز للشغل<span class="punct"> . </span></span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Job 1<span class="punct"> : </span> Build</strong>
+            <span class="desc">Checkout ← Setup Node ← npm ci ← npm run build → ينتج مجلد <code>build/</code><span class="punct"> . </span></span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Upload Artifact</strong>
+            <span class="desc">يحفظ مجلد <code>build/</code> عشان الـ job الجاي يستخدمه<span class="punct"> . </span></span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Job 2<span class="punct"> : </span> Deploy <span class="punct"> ( </span>needs<span class="punct"> : </span> build<span class="punct"> ) </span></strong>
+            <span class="desc">يستنى build يخلص ← يحمل artifact ← ينشر على GitHub Pages<span class="punct"> . </span></span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>الموقع LIVE<span class="punct"> ! </span> 🚀</strong>
+            <span class="desc">الموقع الجديد شغال على <code>https://user.github.io/repo/</code><span class="punct"> . </span></span>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="subsection">
+      <div class="sub-title">الرسمة الكاملة</div>
+
+      <div class="arch-box">
+  <div class="ab-row"><span class="ab-hl">Job 1: BUILD</span></div>
+  <div class="ab-row"><span class="ab-dim">runs-on:</span> ubuntu-latest</div>
+  <div class="ab-row" style="height:0.5em"></div>
+  <div class="ab-row"><span class="ab-dir">├─</span> actions/checkout@v4     <span class="ab-comment">← "جبت الكود ✅"</span></div>
+  <div class="ab-row"><span class="ab-dir">├─</span> actions/setup-node@v4   <span class="ab-comment">← "ثبت Node.js 20 ✅"</span></div>
+  <div class="ab-row"><span class="ab-dir">├─</span> run: npm ci              <span class="ab-comment">← "نزلت dependencies ✅"</span></div>
+  <div class="ab-row"><span class="ab-dir">├─</span> run: npm run build       <span class="ab-comment">← "بنيت → build/ ✅"</span></div>
+  <div class="ab-row"><span class="ab-dir">└─</span> upload-artifact          <span class="ab-comment">← "حفظت build/ ✅"</span></div>
+</div>
+                          ↓
+                    <span class="ab-dim">needs<span class="punct"> : </span> build</span>
+                    <span class="ab-comment"><span class="punct"> " </span>مستنى build يخلص<span class="punct"> . </span><span class="punct"> . </span><span class="punct"> . </span><span class="punct"> " </span></span>
+                          ↓
+<div class="arch-box">
+  <div class="ab-row"><span class="ab-hl">Job 2: DEPLOY</span></div>
+  <div class="ab-row"><span class="ab-dim">needs:</span> build</div>
+  <div class="ab-row"><span class="ab-dim">if:</span> github.ref == 'refs/heads/main'</div>
+  <div class="ab-row" style="height:0.5em"></div>
+  <div class="ab-row"><span class="ab-dir">├─</span> download-artifact       <span class="ab-comment">← "جبت build/ ✅"</span></div>
+  <div class="ab-row"><span class="ab-dir">└─</span> deploy-pages            <span class="ab-comment">← "نشرت على Pages ✅"</span></div>
+  <div class="ab-row">                             <span class="ab-comment">← "الموقع LIVE! 🚀"</span></div>
+</div>
+    </div>
+
+    <div class="subsection">
+      <div class="sub-title">الـ YAML الكامل</div>
+
+      <div class="code-block h1">
+        <div class="cb-head">
+          <span class="cb-label">deploy.yml <span class="punct"> — </span> React إلى GitHub Pages</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">name</span>: <span class="str">Build &amp; Deploy React App</span>
+
+<span class="kw">on</span>:
+  <span class="kw">push</span>:
+    <span class="kw">branches</span>: [<span class="str">main</span>]
+
+<span class="kw">permissions</span>:
+  <span class="kw">contents</span>: <span class="str">read</span>
+  <span class="kw">pages</span>: <span class="str">write</span>
+  <span class="kw">id-token</span>: <span class="str">write</span>
+
+<span class="kw">jobs</span>:
+  <span class="kw">build</span>:
+    <span class="kw">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="kw">steps</span>:
+      - <span class="kw">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="kw">uses</span>: <span class="str">actions/setup-node@v4</span>
+        <span class="kw">with</span>:
+          <span class="kw">node-version</span>: <span class="str">'20'</span>
+          <span class="kw">cache</span>: <span class="str">'npm'</span>
+      - <span class="kw">run</span>: <span class="str">npm ci</span>
+      - <span class="kw">run</span>: <span class="str">npm run build</span>
+      - <span class="kw">uses</span>: <span class="str">actions/upload-artifact@v4</span>
+        <span class="kw">with</span>:
+          <span class="kw">name</span>: <span class="str">production-files</span>
+          <span class="kw">path</span>: <span class="str">./build/</span>
+
+  <span class="kw">deploy</span>:
+    <span class="kw">needs</span>: <span class="str">build</span>
+    <span class="kw">if</span>: <span class="str">github.ref == 'refs/heads/main'</span>
+    <span class="kw">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="kw">environment</span>:
+      <span class="kw">name</span>: <span class="str">github-pages</span>
+      <span class="kw">url</span>: <span class="str">${{ steps.deployment.outputs.page_url }}</span>
+    <span class="kw">steps</span>:
+      - <span class="kw">uses</span>: <span class="str">actions/download-artifact@v4</span>
+        <span class="kw">with</span>:
+          <span class="kw">name</span>: <span class="str">production-files</span>
+          <span class="kw">path</span>: <span class="str">./build/</span>
+      - <span class="kw">uses</span>: <span class="str">actions/deploy-pages@v4</span>
+        <span class="kw">id</span>: <span class="str">deployment</span></pre>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="sub-title">مقارنة <span class="punct"> — </span> نظري vs عملي</div>
+
+      <table class="info-table">
+        <thead>
+          <tr><th>النظري</th><th>العملي <span class="punct"> ( </span>YAML<span class="punct"> ) </span></th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="punct"> " </span>يشتغل على push لـ main<span class="punct"> " </span></td><td><code>on: push: branches: [main]</code></td></tr>
+          <tr><td><span class="punct"> " </span>على Ubuntu<span class="punct"> " </span></td><td><code>runs-on: ubuntu-latest</code></td></tr>
+          <tr><td><span class="punct"> " </span>جيب الكود<span class="punct"> " </span></td><td><code>uses: actions/checkout@v4</code></td></tr>
+          <tr><td><span class="punct"> " </span>ثبت Node<span class="punct"> " </span></td><td><code>uses: actions/setup-node@v4</code></td></tr>
+          <tr><td><span class="punct"> " </span>نزل الحزم<span class="punct"> " </span></td><td><code>run: npm ci</code></td></tr>
+          <tr><td><span class="punct"> " </span>ابني الموقع<span class="punct"> " </span></td><td><code>run: npm run build</code></td></tr>
+          <tr><td><span class="punct"> " </span>احفظ الملفات<span class="punct"> " </span></td><td><code>uses: actions/upload-artifact@v4</code></td></tr>
+          <tr><td><span class="punct"> " </span>مستنى build يخلص<span class="punct"> " </span></td><td><code>needs: build</code></td></tr>
+          <tr><td><span class="punct"> " </span>جيب الملفات<span class="punct"> " </span></td><td><code>uses: actions/download-artifact@v4</code></td></tr>
+          <tr><td><span class="punct"> " </span>انشر<span class="punct"> " </span></td><td><code>uses: actions/deploy-pages@v4</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="verify">
+      <div class="v-label">الخلاصة</div>
+      <p dir="ltr">You don't need to memorize YAML syntax<span class="punct"> . </span> Understand the flow<span class="punct"> : </span> Event → Job → Step<span class="punct"> . </span> The syntax is just a way to describe that flow in a file<span class="punct"> . </span></p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ═══════════════════════════════════════
+       SECTION 5 — RUNNERS
+  ═══════════════════════════════════════ -->
+  <section class="section" id="runners">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2 class="section-title">GitHub-hosted vs Self-hosted</h2>
+    </div>
+
+    <p class="prose">
+      الـ Runner هو السيرفر اللي بيشتغل عليه الـ workflow<span class="punct"> . </span> نوعين<span class="punct"> : </span> GitHub-hosted <span class="punct"> ( </span>بيوفره GitHub<span class="punct"> ) </span>
+      و Self-hosted <span class="punct"> ( </span>بتوفره أنت على جهازك أو سيرفرك<span class="punct"> ) </span><span class="punct"> . </span>
+    </p>
+
+    <table class="info-table">
+      <thead>
+        <tr><th>الخاصية</th><th>GitHub-hosted</th><th>Self-hosted</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>السيرفر</td><td>سيرفرات GitHub</td><td>جهازك أو VM أو سيرفرك</td></tr>
+        <tr><td>التكلفة</td><td>2000 دقيقة/شهر مجانا <span class="punct"> ( </span>Public repos<span class="punct"> ) </span></td><td>مجاني <span class="punct"> — </span> لكن تكلفة السيرفر عليك</td></tr>
+        <tr><td>الإعداد</td><td>جاهز <span class="punct"> — </span> مش محتاج حاجة</td><td>تحتاج تنزل وتشغل GitHub Actions Runner</td></tr>
+        <tr><td>الوصول للشبكة</td><td>عام <span class="punct"> — </span> مش هيوصل لـ private network</td><td>يوصل لشبكتك الداخلية <span class="punct"> — </span> VPN<span class="punct"> , </span> VPC<span class="punct"> , </span> إلخ</td></tr>
+        <tr><td>الصيانة</td><td>GitHub مسئول</td><td>عليك <span class="punct"> — </span> أمان<span class="punct"> , </span> تحديثات<span class="punct"> , </span> توفر</td></tr>
+        <tr><td>الاستخدام</td><td>99% من الحالات <span class="punct"> — </span> يكفي</td><td>لما تحتاج hardware خاص أو private network</td></tr>
+      </tbody>
+    </table>
+
+    <div class="subsection">
+      <div class="sub-title">إعداد Self-hosted Runner</div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">تثبيت Runner على Ubuntu</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># 1. روح للـ repo → Settings → Actions → Runners → Add runner</span>
+<span class="cm"># 2. GitHub هيديك أوامر زي دي:</span>
+
+mkdir actions-runner && cd actions-runner
+curl -o actions-runner-linux-x64-2.xxx.tar.gz -L https://github.com/actions/runner/releases/download/v2.xxx/actions-runner-linux-x64-2.xxx.tar.gz
+tar xzf actions-runner-linux-x64-2.xxx.tar.gz
+./config.sh --url https://github.com/YOUR-ORG/YOUR-REPO --token ABC123
+./run.sh</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">استخدام الـ self-hosted في YAML</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">jobs</span>:
+  <span class="kw">deploy</span>:
+    <span class="kw">runs-on</span>: <span class="str">self-hosted</span>   <span class="cm"># هيشتغل على جهازك</span>
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: <span class="str">echo "Running on my own server!"</span></pre>
+      </div>
+
+      <div class="callout warn">
+        <span class="callout-icon">⚠</span>
+        <div>
+          <strong>تنبيه أمان<span class="punct"> : </span></strong> الـ self-hosted runner أي شخص عنده access للـ repo يقدر يشغل كود على جهازك<span class="punct"> . </span>
+          استخدمه بحذر <span class="punct"> — </span> خصوصا في public repos<span class="punct"> . </span> الأفضل تستخدم GitHub-hosted لو تقدر<span class="punct"> . </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 6 — LINKING FILES
+  ═══════════════════════════════════════ -->
+  <section class="section" id="linking">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">6</div>
+      <h2 class="section-title">ربط ملفات YAML</h2>
+    </div>
+
+    <p class="prose">
+      مع增大 المشروع<span class="punct"> , </span> هتحتاج تعيد استخدام نفس الـ steps في أكتر من workflow<span class="punct"> . </span>
+                    GitHub Actions يدعم طريقتين للربط<span class="punct"> : </span>
+    </p>
+
+    <div class="subsection">
+      <div class="sub-title">الطريقة 1<span class="punct"> : </span> Reusable Workflows</div>
+
+      <p class="prose">
+        Workflow عادي لكنه بيستخدم <code>workflow_call</code> بدل <code>push</code> <span class="punct"> — </span> وده يخلّي workflows تانية تستدعيه<span class="punct"> . </span>
+      </p>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">reusable-build.yml <span class="punct"> — </span> الـ Workflow القابل لإعادة الاستخدام</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">name</span>: <span class="str">Reusable Build</span>
+
+<span class="kw">on</span>:
+  <span class="kw">workflow_call</span>:             <span class="cm"># ⬅️ دي اللي تخليه reusable</span>
+    <span class="kw">inputs</span>:
+      <span class="kw">node-version</span>:
+        <span class="kw">required</span>: <span class="val">true</span>
+        <span class="kw">type</span>: <span class="str">string</span>
+
+<span class="kw">jobs</span>:
+  <span class="kw">build</span>:
+    <span class="kw">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="kw">steps</span>:
+      - <span class="kw">uses</span>: <span class="str">actions/setup-node@v4</span>
+        <span class="kw">with</span>:
+          <span class="kw">node-version</span>: <span class="str">${{ inputs.node-version }}</span>
+      - <span class="kw">run</span>: <span class="str">npm ci && npm run build</span></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">main.yml <span class="punct"> — </span> الاستدعاء</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">jobs</span>:
+  <span class="kw">call-reusable</span>:
+    <span class="kw">uses</span>: <span class="str">./.github/workflows/reusable-build.yml</span>
+    <span class="kw">with</span>:
+      <span class="kw">node-version</span>: <span class="str">'20'</span></pre>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="sub-title">الطريقة 2<span class="punct"> : </span> Composite Actions</div>
+
+      <p class="prose">
+        Action صغير reusable <span class="punct"> — </span> بيجمع مجموعة steps في ملف <code>action.yml</code><span class="punct"> . </span>
+        الفرق إنه مش workflow كامل<span class="punct"> , </span> ده مجرد steps جاهزة تستخدمها جوا أي job<span class="punct"> . </span>
+      </p>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label"><span class="punct"> . </span>github/actions/my-setup/action.yml</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">name</span>: <span class="str">My Setup</span>
+<span class="kw">description</span>: <span class="str">Setup Node and install deps</span>
+
+<span class="kw">runs</span>:
+  <span class="kw">using</span>: <span class="str">composite</span>
+  <span class="kw">steps</span>:
+    - <span class="kw">uses</span>: <span class="str">actions/setup-node@v4</span>
+      <span class="kw">with</span>:
+        <span class="kw">node-version</span>: <span class="str">'20'</span>
+    - <span class="kw">run</span>: <span class="str">npm ci</span>
+      <span class="kw">shell</span>: <span class="str">bash</span></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">استخدام الـ composite action</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">jobs</span>:
+  <span class="kw">build</span>:
+    <span class="kw">steps</span>:
+      - <span class="kw">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="kw">uses</span>: <span class="str">./.github/actions/my-setup</span>  <span class="cm"># ⬅️ استدعاء</span>
+      - <span class="kw">run</span>: <span class="str">npm run build</span></pre>
+      </div>
+
+      <div class="callout success">
+        <span class="callout-icon">💡</span>
+        <div>
+          <strong>الفرق<span class="punct"> : </span></strong> Reusable workflows = workflow كامل<span class="punct"> , </span> Composite actions = steps جاهزة للاستخدام داخل أي job<span class="punct"> . </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="sub-title">مثال <span class="punct"> — </span> 3 ملفات مرتبطة</div>
+
+      <div class="arch-box">
+  <div class="ab-row"><span class="ab-dir">.github/</span></div>
+  <div class="ab-row"><span class="ab-dir">├── workflows/</span></div>
+  <div class="ab-row"><span class="ab-dir">│   ├──</span> <span class="ab-accent">main.yml</span>          <span class="ab-comment"># الـ workflow الرئيسي</span></div>
+  <div class="ab-row"><span class="ab-dir">│   └──</span> <span class="ab-accent">reusable-test.yml</span> <span class="ab-comment"># reusable workflow</span></div>
+  <div class="ab-row"><span class="ab-dir">└── actions/</span></div>
+  <div class="ab-row">    <span class="ab-dir">└──</span> <span class="ab-accent">setup-node/</span>      <span class="ab-comment"># composite action</span></div>
+  <div class="ab-row">        <span class="ab-dir">└──</span> action.yml</div>
+</div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">main.yml <span class="punct"> — </span> يستدعي reusable-test و composite action</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">name</span>: <span class="str">Main CI/CD</span>
+<span class="kw">on</span>: [<span class="str">push</span>]
+
+<span class="kw">jobs</span>:
+  <span class="kw">build</span>:
+    <span class="kw">steps</span>:
+      - <span class="kw">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="kw">uses</span>: <span class="str">./.github/actions/setup-node</span>
+      - <span class="kw">run</span>: <span class="str">npm run build</span>
+
+  <span class="kw">call-tests</span>:
+    <span class="kw">needs</span>: <span class="str">build</span>
+    <span class="kw">uses</span>: <span class="str">./.github/workflows/reusable-test.yml</span>
+
+  <span class="kw">deploy</span>:
+    <span class="kw">needs</span>: [<span class="str">build</span>, <span class="str">call-tests</span>]
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: <span class="str">echo "Deploying..."</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ═══════════════════════════════════════
+       SECTION 7 — MISTAKES & DEBUGGING
+  ═══════════════════════════════════════ -->
+  <section class="section" id="mistakes">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent-red);color:#000;">7</div>
+      <h2 class="section-title">الأخطاء الشائعة &amp; Debugging</h2>
+    </div>
+
+    <p class="prose">
+      أكتر الأخطاء اللي بتقع فيها وأنت بتتعلم GitHub Actions <span class="punct"> — </span> وكيف تحلها<span class="punct"> . </span>
+    </p>
+
+    <table class="info-table">
+      <thead>
+        <tr><th>المشكلة</th><th>السبب</th><th>الحل</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>الـ workflow مش بيظهر في GitHub</td><td>الملف مش في المسار الصح</td><td>تأكد من <code>.github/workflows/*.yml</code></td></tr>
+        <tr><td><span class="punct"> " </span>Invalid workflow file<span class="punct"> " </span></td><td>YAML indentation غلط</td><td>استخدم مسافتين <span class="punct"> ( </span>مش tabs<span class="punct"> ) </span></td></tr>
+        <tr><td><span class="punct"> " </span>Command not found<span class="punct"> " </span></td><td>نسيت <code>actions/checkout</code></td><td>حط <code>- uses: actions/checkout@v4</code> أول step</td></tr>
+        <tr><td><span class="punct"> " </span>Permission denied<span class="punct"> " </span></td><td>الـ GITHUB_TOKEN مش عنده صلاحيات</td><td>زود <code>permissions:</code> في الـ YAML</td></tr>
+        <tr><td><span class="punct"> " </span>Secret not found<span class="punct"> " </span></td><td>الـ secret مش متسجل</td><td>Settings → Secrets and variables → Actions</td></tr>
+        <tr><td>الـ build بطيء</td><td>مفيش caching</td><td>استخدم <code>actions/cache@v4</code></td></tr>
+        <tr><td>Job stuck في queue</td><td>GitHub limits الـ concurrency</td><td>استخدم self-hosted runner</td></tr>
+      </tbody>
+    </table>
+
+    <div class="subsection">
+      <div class="sub-title">Debugging Techniques</div>
+
+      <div class="benefit-grid">
+        <div class="benefit-card">
+          <span class="bc-icon">🔍</span>
+          <div class="bc-title">تفعيل Debug Logging</div>
+          <div class="bc-body">
+            حط secret اسمه <code dir="ltr">ACTIONS_STEP_DEBUG=true</code> <span class="punct"> — </span> GitHub هيعرض logs تفصيلية لكل step<span class="punct"> . </span>
+          </div>
+        </div>
+        <div class="benefit-card">
+          <span class="bc-icon">⏩</span>
+          <div class="bc-title">continue-on-error</div>
+          <div class="bc-body">
+            لو step فشل<span class="punct"> , </span> الـ workflow كله يقف<span class="punct"> . </span> استخدم <code dir="ltr">continue-on-error<span class="punct"> : </span> true</code> عشان تكمل وتشوف الباقي<span class="punct"> . </span>
+          </div>
+        </div>
+        <div class="benefit-card">
+          <span class="bc-icon">⚠</span>
+          <div class="bc-title">if<span class="punct"> : </span> failure<span class="punct"> ( </span><span class="punct"> ) </span></div>
+          <div class="bc-body">
+            حط step في الآخر <code dir="ltr">if<span class="punct"> : </span> always<span class="punct"> ( </span><span class="punct"> ) </span></code> عشان تشوف logs الفشل أو تعمل cleanup<span class="punct"> . </span>
+          </div>
+        </div>
+        <div class="benefit-card">
+          <span class="bc-icon">📋</span>
+          <div class="bc-title">Manual Dispatch</div>
+          <div class="bc-body">
+            استخدم <code dir="ltr">workflow_dispatch</code> عشان تشغل الـ workflow بإيدك وقت ما تحب للاختبار<span class="punct"> . </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠</span>
+      <div>
+        <strong>أكتر خطأ يضيع وقت المبتدئين<span class="punct"> : </span></strong> الـ YAML بيستخدم <strong>مسافتين</strong> <span class="punct"> ( </span>spaces<span class="punct"> ) </span> مش tabs<span class="punct"> . </span>
+        لو استخدمت tab<span class="punct"> , </span> GitHub هيرفض الملف<span class="punct"> . </span> خلي محرر النصوص بتاعك يظهر المسافات<span class="punct"> . </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 8 — CONTEXT OBJECTS
+  ═══════════════════════════════════════ -->
+  <section class="section" id="context">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--heavy3-accent);color:#000;">8</div>
+      <h2 class="section-title">Context Objects <span class="punct"> — </span> المتغيرات المضمنة</h2>
+    </div>
+
+    <p class="prose">
+      GitHub Actions فيه Context Objects <span class="punct"> — </span> متغيرات جاهزة تقدر تستخدمها في الـ YAML عشان تجيب معلومات عن الـ repo<span class="punct"> , </span>
+      الـ event<span class="punct"> , </span> الـ runner<span class="punct"> , </span> وغيرها<span class="punct"> . </span> بتستخدمها بصيغة <code>${{ context.key }}</code><span class="punct"> . </span>
+    </p>
+
+    <table class="info-table">
+      <thead>
+        <tr><th>المتغير</th><th>الوصف</th><th>أمثلة</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>${{ github.ref }}</code></td><td>الـ branch أو tag الحالي</td><td><code>refs/heads/main</code></td></tr>
+        <tr><td><code>${{ github.event_name }}</code></td><td>الحدث اللي شغّل الـ workflow</td><td><code>push</code><span class="punct"> , </span> <code>pull_request</code></td></tr>
+        <tr><td><code>${{ github.actor }}</code></td><td>اليوزر اللي عمل الحدث</td><td><code>khaled</code></td></tr>
+        <tr><td><code>${{ github.repository }}</code></td><td>الـ repo الحالي</td><td><code>owner/repo-name</code></td></tr>
+        <tr><td><code>${{ github.sha }}</code></td><td>الـ commit hash</td><td><code>abc123def456...</code></td></tr>
+        <tr><td><code>${{ env.VAR_NAME }}</code></td><td>متغير من env</td><td><code>${{ env.NODE_ENV }}</code></td></tr>
+        <tr><td><code>${{ secrets.SECRET_NAME }}</code></td><td>secret من Settings</td><td><code>${{ secrets.API_KEY }}</code></td></tr>
+        <tr><td><code>${{ matrix.os }}</code></td><td>قيمة من الـ matrix</td><td><code>ubuntu-latest</code></td></tr>
+        <tr><td><code>${{ runner.os }}</code></td><td>نظام الـ runner</td><td><code>Linux</code><span class="punct"> , </span> <code>Windows</code><span class="punct"> , </span> <code>macOS</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">أمثلة استخدام Context</span>
+        <div class="cb-dots"><span></span><span></span><span></span></div>
+      </div>
+      <pre><span class="kw">jobs</span>:
+  <span class="kw">info</span>:
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: <span class="str">echo "Branch: ${{ github.ref }}"</span>
+      - <span class="kw">run</span>: <span class="str">echo "Event: ${{ github.event_name }}"</span>
+      - <span class="kw">run</span>: <span class="str">echo "Actor: ${{ github.actor }}"</span>
+      - <span class="kw">run</span>: <span class="str">echo "OS: ${{ runner.os }}"</span>
+      - <span class="kw">env</span>:
+          <span class="kw">MY_SECRET</span>: <span class="str">${{ secrets.API_KEY }}</span>
+        <span class="kw">run</span>: <span class="str">echo "Key length: ${#MY_SECRET}"</span></pre>
+    </div>
+
+    <div class="callout danger">
+      <span class="callout-icon">⚠</span>
+      <div>
+        <strong>تحذير أمان<span class="punct"> : </span></strong> متطبعش الـ secrets في الـ logs<span class="punct"> ! </span> لو كتبت <code>echo ${{ secrets.API_KEY }}</code><span class="punct"> , </span>
+        GitHub بيحولها لـ <code>***</code> تلقائيا<span class="punct"> . </span> بس لسه <span class="punct"> — </span> بلاش تطبعها<span class="punct"> . </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 9 — SECURITY
+  ═══════════════════════════════════════ -->
+  <section class="section" id="security">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent-red);color:#fff;">9</div>
+      <h2 class="section-title">الأمان في GitHub Actions</h2>
+    </div>
+
+    <div class="benefit-grid">
+      <div class="benefit-card danger">
+        <span class="bc-icon">🔐</span>
+        <div class="bc-title">1<span class="punct"> . </span> أقل صلاحية مطلوبة</div>
+        <div class="bc-body">
+          دايمًا استخدم <code dir="ltr">permissions<span class="punct"> : </span> contents<span class="punct"> : </span> read</code> <span class="punct"> — </span> متديش أكتر من اللي الـ job محتاجه<span class="punct"> . </span>
+        </div>
+      </div>
+      <div class="benefit-card danger">
+        <span class="bc-icon">🔑</span>
+        <div class="bc-title">2<span class="punct"> . </span> OIDC بدل Secrets</div>
+        <div class="bc-body">
+          OIDC بيخلّي الـ workflow ياخد token مؤقت من مزود السحابة <span class="punct"> ( </span>AWS<span class="punct"> , </span> Azure<span class="punct"> , </span> GCP<span class="punct"> ) </span> من غير ما تخزن secret طويل العمر<span class="punct"> . </span>
+        </div>
+      </div>
+      <div class="benefit-card danger">
+        <span class="bc-icon">🛡️</span>
+        <div class="bc-title">3<span class="punct"> . </span> تجنب Script Injection</div>
+        <div class="bc-body">
+          متستخدمش <code dir="ltr">${{ }}</code> جوا <code>run:</code> مباشرة <span class="punct"> — </span> ممكن user يدخل كود خبيث عن طريق PR title مثلا<span class="punct"> . </span>
+          استخدم <code>env:</code> عشان تمرر القيم<span class="punct"> . </span>
+        </div>
+      </div>
+      <div class="benefit-card danger">
+        <span class="bc-icon">📌</span>
+        <div class="bc-title">4<span class="punct"> . </span> Pin Actions بـ SHA</div>
+        <div class="bc-body">
+          بدل <code dir="ltr">@v4</code><span class="punct"> , </span> استخدم <code dir="ltr">@full-sha-hash</code> عشان تمنع التغييرات المفاجئة في الـ action من تأثير على الـ workflow<span class="punct"> . </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">Script Injection <span class="punct"> — </span> المشكلة والحل</span>
+        <div class="cb-dots"><span></span><span></span><span></span></div>
+      </div>
+      <pre><span class="cm"># ❌ خطأ — قابل للاختراق</span>
+- <span class="kw">run</span>: <span class="str">echo "${{ github.event.pull_request.title }}"</span>
+
+<span class="cm"># ✅ صح — آمن</span>
+- <span class="kw">env</span>:
+    <span class="kw">PR_TITLE</span>: <span class="str">${{ github.event.pull_request.title }}</span>
+  <span class="kw">run</span>: <span class="str">echo "$PR_TITLE"</span></pre>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ</span>
+      <div>
+        <strong>خلاصة الأمان<span class="punct"> : </span></strong> أقل صلاحية→ OIDC إن أمكن→ لا تثق في input من الخارج→ حدد version الـ actions<span class="punct"> . </span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ═══════════════════════════════════════
+       SECTION 10 — INTERVIEW
+  ═══════════════════════════════════════ -->
+  <section class="section" id="interview">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--heavy2-accent);color:#000;">10</div>
+      <h2 class="section-title">أسئلة المقابلات</h2>
+    </div>
+
+    <p class="prose">
+      أكثر الأسئلة اللي بتتكرر في مقابلات GitHub Actions <span class="punct"> — </span> مع الإجابات المثالية<span class="punct"> . </span>
+    </p>
+
+    <div class="subsection">
+      <div class="sub-title">أسئلة أساسية</div>
+
+      <div class="callout info">
+        <span class="callout-icon">Q</span>
+        <div>
+          <strong>اشرح GitHub Actions باختصار<span class="punct"> . </span></strong><br>
+          •هو نظام CI/CD من GitHub<span class="punct"> . </span> بتكتب ملفات YAML في <code>.github/workflows/</code> تحدد فيها Events <span class="punct"> ( </span>زي push<span class="punct"> ) </span> اللي تشغل Jobs <span class="punct"> ( </span>مهام<span class="punct"> ) </span> فيها Steps <span class="punct"> ( </span>خطوات<span class="punct"> ) </span> على Runners <span class="punct"> ( </span>سيرفرات<span class="punct"> ) </span><span class="punct"> . </span>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">Q</span>
+        <div>
+          <strong>إيه الفرق بين push و pull_request events<span class="punct"> ؟ </span></strong><br>
+          •<code>push</code> بيشتغل لما تعمل push على branch<span class="punct"> . </span> <code>pull_request</code> بيشتغل لما تعمل PR <span class="punct"> ( </span>open<span class="punct"> , </span> synchronize<span class="punct"> , </span> closed<span class="punct"> ) </span><span class="punct"> . </span>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">Q</span>
+        <div>
+          <strong>إيه الفرق بين needs و strategy.matrix<span class="punct"> ؟ </span></strong><br>
+          •<code>needs</code> بيخلّي job تستنى job تانية <span class="punct"> ( </span>تنفيذ متسلسل<span class="punct"> ) </span><span class="punct"> . </span>
+          •<code>matrix</code> يخلّيك تكرر نفس الـ job بقيم مختلفة <span class="punct"> ( </span>تنفيذ متوازي<span class="punct"> ) </span><span class="punct"> . </span>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">Q</span>
+        <div>
+          <strong>إزاي تعمل deployment بعد ما tests تعدي<span class="punct"> ؟ </span></strong><br>
+          •استخدم <code>needs: test</code> في job الـ deploy <span class="punct"> — </span> مش هيتشغل غير لو test نجح<span class="punct"> . </span>
+          وكمان <code>if: github.ref == 'refs/heads/main'</code> عشان بس على main<span class="punct"> . </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <div class="sub-title">سيناريوهات عملية في المقابلات</div>
+
+      <div class="callout warn">
+        <span class="callout-icon">Q</span>
+        <div>
+          <strong>لو عندك workflow بيشتغل على push لـ main<span class="punct"> , </span> وعايز تعمل manual trigger باختيار البيئة<span class="punct"> . </span></strong><br>
+          •استخدم <code>workflow_dispatch</code> مع input للـ environment<span class="punct"> . </span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">Manual Trigger</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="kw">on</span>:
+  <span class="kw">workflow_dispatch</span>:
+    <span class="kw">inputs</span>:
+      <span class="kw">environment</span>:
+        <span class="kw">description</span>: <span class="str">'Environment to deploy'</span>
+        <span class="kw">required</span>: <span class="val">true</span>
+        <span class="kw">default</span>: <span class="str">'staging'</span></pre>
+      </div>
+
+      <div class="callout warn">
+        <span class="callout-icon">Q</span>
+        <div>
+          <strong>ازاي تسرع الـ workflow بواسطة caching<span class="punct"> ؟ </span></strong><br>
+          •استخدم <code>actions/cache@v4</code> عشان تحفظ <code>node_modules</code> أو <code>~/.npm</code> وتستعيدها في المرات الجاية بدل ما تنزل من الصفر<span class="punct"> . </span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">Caching node_modules</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre>- <span class="kw">name</span>: <span class="str">Cache node_modules</span>
+  <span class="kw">uses</span>: <span class="str">actions/cache@v4</span>
+  <span class="kw">with</span>:
+    <span class="kw">path</span>: <span class="str">~/.npm</span>
+    <span class="kw">key</span>: <span class="str">${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}</span>
+    <span class="kw">restore-keys</span>: <span class="str">|</span>
+<span class="str">      ${{ runner.os }}-node-</span></pre>
+      </div>
+
+      <div class="callout success">
+        <span class="callout-icon">🎯</span>
+        <div>
+          <strong>نصيحة للمقابلة<span class="punct"> : </span></strong>
+          ابدأ بالـ basics <span class="punct"> ( </span>Workflow ← Job ← Step<span class="punct"> ) </span><span class="punct"> . </span>
+          اذكر <code>actions/checkout</code> و <code>actions/setup-node</code> كأمثلة<span class="punct"> . </span>
+          تكلم عن caching و secrets كـ best practices<span class="punct"> . </span>
+          لو سألوك عن scale<span class="punct"> : </span> اذكر reusable workflows و self-hosted runners<span class="punct"> . </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 11 — QUICK REFERENCE
+  ═══════════════════════════════════════ -->
+  <section class="section" id="quickref">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">11</div>
+      <h2 class="section-title">Quick Reference <span class="punct"> — </span> مرجع سريع</h2>
+    </div>
+
+    <p class="prose">
+      جدول واحد شامل لكل keywords في GitHub Actions <span class="punct"> — </span> ارجع له وقت ما تحتاج<span class="punct"> . </span>
+    </p>
+
+    <table class="info-table">
+      <thead>
+        <tr><th>الكلمة</th><th>الوظيفة</th><th>مثال</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>name</code></td><td>اسم الـ workflow</td><td><code>name: CI/CD</code></td></tr>
+        <tr><td><code>on</code></td><td>الحدث اللي يشغل الـ workflow</td><td><code>on: [push, pull_request]</code></td></tr>
+        <tr><td><code>env</code></td><td>متغيرات عامة</td><td><code>env: NODE_ENV: production</code></td></tr>
+        <tr><td><code>jobs</code></td><td>جذر تعريف المهام</td><td><code>jobs: { build: ... }</code></td></tr>
+        <tr><td><code>runs-on</code></td><td>نوع الـ runner</td><td><code>runs-on: ubuntu-latest</code></td></tr>
+        <tr><td><code>needs</code></td><td>ترتيب الـ jobs</td><td><code>needs: [build, test]</code></td></tr>
+        <tr><td><code>steps</code></td><td>الخطوات داخل job</td><td><code>steps: [uses, run]</code></td></tr>
+        <tr><td><code>uses</code></td><td>استخدام action</td><td><code>uses: actions/checkout@v4</code></td></tr>
+        <tr><td><code>run</code></td><td>تشغيل أمر shell</td><td><code>run: npm test</code></td></tr>
+        <tr><td><code>with</code></td><td>مدخلات للـ action</td><td><code>with: node-version: '20'</code></td></tr>
+        <tr><td><code>if</code></td><td>شرط للتشغيل</td><td><code>if: github.ref == 'main'</code></td></tr>
+        <tr><td><code>strategy.matrix</code></td><td>تكرار الـ job بقيم</td><td><code>matrix: { os: [ubuntu, windows] }</code></td></tr>
+        <tr><td><code>permissions</code></td><td>صلاحيات GITHUB_TOKEN</td><td><code>permissions: contents: read</code></td></tr>
+        <tr><td><code>defaults</code></td><td>إعدادات افتراضية</td><td><code>defaults: run: shell: bash</code></td></tr>
+        <tr><td><code>continue-on-error</code></td><td>يكمل حتى لو فشل</td><td><code>continue-on-error: true</code></td></tr>
+        <tr><td><code>timeout-minutes</code></td><td>الحد الأقصى للوقت</td><td><code>timeout-minutes: 60</code></td></tr>
+        <tr><td><code>services</code></td><td>تشغيل خدمة مساعدة</td><td><code>services: redis: image: redis</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="verify">
+      <div class="v-label">أهم 4 actions لازم تعرفهم</div>
+      <p dir="ltr">actions/checkout@v4 · actions/setup-node@v4 · actions/cache@v4 · actions/upload-artifact@v4</p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ── Active nav tracking ──
+const sections = document.querySelectorAll('.section[id]');
+const navLinks = document.querySelectorAll('.nav-item');
+if (sections.length && navLinks.length) {
+  const navMap = {};
+  navLinks.forEach(a => {
+    const id = a.getAttribute('href')?.replace('#', '');
+    if (id) navMap[id] = a;
+  });
+  const obs = new IntersectionObserver(entries => {
+    let best = null, bestRatio = 0;
+    entries.forEach(e => {
+      if (e.intersectionRatio > bestRatio) { best = e.target.id; bestRatio = e.intersectionRatio; }
+    });
+    navLinks.forEach(a => a.classList.remove('active'));
+    if (best && navMap[best]) navMap[best].classList.add('active');
+  }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+  sections.forEach(s => obs.observe(s));
+}
+
+// ── Theme toggle ──
+const savedTheme = localStorage.getItem('claude-guide-theme');
+if (savedTheme === 'light') document.documentElement.classList.add('light');
+
+const btn = document.getElementById('theme-toggle');
+if (btn) {
+  btn.textContent = document.documentElement.classList.contains('light') ? '☀️' : '🌙';
+  btn.addEventListener('click', () => {
+    document.documentElement.classList.toggle('light');
+    const isLight = document.documentElement.classList.contains('light');
+    btn.textContent = isLight ? '☀️' : '🌙';
+    localStorage.setItem('claude-guide-theme', isLight ? 'light' : 'dark');
+  });
+}
+</script>
+<script src="/js/lang.js"></script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:           #0a0d12;
+  --surface:      #0f1318;
+  --surface2:     #141a22;
+  --surface3:     #192030;
+  --border:       #222c40;
+  --border2:      #2a3850;
+  --accent:       #4f8ef7;
+  --accent2:      #00c2a8;
+  --accent3:      #f0a500;
+  --accent-red:   #e85555;
+  --accent-green: #22c97a;
+  --text:         #dce6f5;
+  --text-dim:     #8899b5;
+  --text-muted:   #4d607a;
+  --code-bg:      #080b0f;
+  --code-border:  #1a2233;
+
+  --font-sans:    'Noto Sans Arabic', sans-serif;
+  --font-serif:   'Noto Naskh Arabic', serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  --text-body:    1.125rem;
+  --text-body--lh: 1.8;
+  --text-body-sm:  .95rem;
+  --text-small:   .8rem;
+  --text-code:    .85rem;
+  --text-h1:      2rem;
+  --text-h2:      1.5rem;
+  --text-h3:      1.2rem;
+}
+
+.light {
+  --bg:           #f7f5f0;
+  --surface:      #ffffff;
+  --surface2:     #f0ede6;
+  --surface3:     #e5e1d8;
+  --border:       #d4cfc6;
+  --border2:      #b8b2a8;
+  --accent:       #3b82f6;
+  --accent2:      #14b8a6;
+  --accent3:      #f59e0b;
+  --accent-red:   #ef4444;
+  --accent-green: #22c55e;
+  --text:         #1c1917;
+  --text-dim:     #57534e;
+  --text-muted:   #a8a29e;
+  --code-bg:      #f7f5f0;
+  --code-border:  #d4cfc6;
+  color-scheme: light;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--lh);
+  min-height: 100vh;
+  direction: rtl;
+  text-align: right;
+}
+
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-dim);
+  transition: all .12s;
+}
+.theme-toggle:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* ── COVER / HERO ── */
+.cover {
+  text-align: center;
+  padding: 80px 24px 60px;
+  max-width: 780px;
+  margin: 0 auto;
+}
+.cover .breadcrumb {
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  color: var(--accent2);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.cover h1 {
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+.cover h1 .hl {
+  color: var(--accent2);
+}
+.cover .sub {
+  font-family: var(--font-serif);
+  font-size: var(--text-h3);
+  color: var(--text-dim);
+  margin-bottom: 28px;
+  line-height: 1.7;
+}
+
+/* ── SEARCH ── */
+.search-wrap {
+  max-width: 520px;
+  margin: 0 auto 40px;
+}
+.search-wrap input {
+  width: 100%;
+  padding: 12px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-body-sm);
+  direction: rtl;
+  text-align: right;
+  outline: none;
+  transition: border-color .15s;
+}
+.search-wrap input::placeholder {
+  color: var(--text-muted);
+}
+.search-wrap input:focus {
+  border-color: var(--accent);
+}
+
+/* ── COURSE GRID ── */
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px 60px;
+}
+
+.course-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 22px 22px 20px;
+  text-decoration: none;
+  transition: all .15s;
+  display: flex;
+  flex-direction: column;
+}
+.course-card:hover {
+  border-color: var(--accent);
+  background: var(--surface2);
+  transform: translateY(-2px);
+}
+
+.course-card .cc-tag {
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  color: var(--accent2);
+  margin-bottom: 8px;
+}
+.course-card .cc-title {
+  font-size: var(--text-h3);
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.course-card .cc-desc {
+  font-family: var(--font-serif);
+  font-size: var(--text-body-sm);
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 12px;
+  flex: 1;
+}
+.course-card .cc-meta {
+  font-size: var(--text-small);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  display: flex;
+  gap: 14px;
+}
+
+/* ── FOOTER ── */
+.site-footer {
+  text-align: center;
+  padding: 20px 24px 36px;
+  font-size: var(--text-small);
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .cover { padding: 50px 18px 40px; }
+  .cover h1 { font-size: 1.8rem; }
+  .course-grid { grid-template-columns: 1fr; padding: 0 18px 40px; }
+}
+
+/* ── PUNCTUATION ── */
+.punct { font-weight: 700; }
