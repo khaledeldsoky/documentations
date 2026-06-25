@@ -1,5 +1,5 @@
 (function() {
-  const KEY = 'edu-site-theme';
+  const KEY = 'claude-guide-theme';
   function apply(saved) {
     if (saved === 'light' || (!saved && window.matchMedia('(prefers-color-scheme: light)').matches)) {
       document.documentElement.classList.add('light');
