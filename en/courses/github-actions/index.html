@@ -4,780 +4,100 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GitHub Actions Guide — CI/CD from Scratch</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
-
-  :root {
-    --bg:           #0a0d12;
-    --surface:      #0f1318;
-    --surface2:     #141a22;
-    --surface3:     #192030;
-    --border:       #222c40;
-    --border2:      #2a3850;
-    --accent:       #4f8ef7;
-    --accent2:      #00c2a8;
-    --accent3:      #f0a500;
-    --accent-red:   #e85555;
-    --accent-green: #22c97a;
-    --text:         #dce6f5;
-    --text-dim:     #8899b5;
-    --text-muted:   #4d607a;
-    --code-bg:      #080b0f;
-    --code-border:  #1a2233;
-
-    --heavy1:       #1a2f4a;
-    --heavy2:       #1a3a2a;
-    --heavy3:       #2a1f3a;
-    --heavy1-accent:#4f8ef7;
-    --heavy2-accent:#22c97a;
-    --heavy3-accent:#b87fff;
-
-    --tag-h1-bg:    #1a2f4a; --tag-h1-fg: #7ab8ff;
-    --tag-h2-bg:    #0f2a1a; --tag-h2-fg: #4de89a;
-    --tag-h3-bg:    #221840; --tag-h3-fg: #c89fff;
-    --tag-all-bg:   #1a1a2e; --tag-all-fg: #a0a8e8;
-
-    --font-sans:    system-ui, -apple-system, sans-serif;
-    --font-serif:   Georgia, 'Times New Roman', serif;
-    --font-mono:    'JetBrains Mono', monospace;
-
-    --text-body:    1.125rem;
-    --text-body--lh: 1.8;
-    --text-prose:   1.0625rem;
-    --text-prose--lh: 1.9;
-    --text-h1:      2rem;
-    --text-h1--lh:  1.2;
-    --text-h2:      1.5rem;
-    --text-h2--lh:  1.35;
-    --text-h3:      1.25rem;
-    --text-h3--lh:  1.5;
-    --text-code:    0.8125rem;
-    --text-code--lh: 1.6;
-    --text-body-sm: 0.875rem;
-    --text-body-sm--lh: 1.7;
-    --text-small:   0.8125rem;
-    --text-small--lh: 1.35;
-  }
-
-  :root { color-scheme: dark; }
-
-  .light {
-    --bg:           #f7f5f0;
-    --surface:      #ffffff;
-    --surface2:     #f0ede6;
-    --surface3:     #e5e1d8;
-    --border:       #d4cfc6;
-    --border2:      #b8b2a8;
-    --accent:       #3b82f6;
-    --accent2:      #14b8a6;
-    --accent3:      #f59e0b;
-    --accent-red:   #ef4444;
-    --accent-green: #22c55e;
-    --text:         #1c1917;
-    --text-dim:     #57534e;
-    --text-muted:   #a8a29e;
-    --code-bg:      #f7f5f0;
-    --code-border:  #d4cfc6;
-
-    --heavy1:       #ede4d4;
-    --heavy2:       #dce8d4;
-    --heavy3:       #e6def0;
-    --heavy1-accent:#3b82f6;
-    --heavy2-accent:#22c55e;
-    --heavy3-accent:#a855f7;
-
-    --tag-h1-bg:    #ede4d4; --tag-h1-fg: #2563eb;
-    --tag-h2-bg:    #dce8d4; --tag-h2-fg: #16a34a;
-    --tag-h3-bg:    #e6def0; --tag-h3-fg: #9333ea;
-    --tag-all-bg:   #dedcf0; --tag-all-fg: #6366f1;
-
-    color-scheme: light;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-sans);
-    font-size: var(--text-body);
-    line-height: var(--text-body--lh);
-    min-height: 100vh;
-  }
-
-  .prose {
-    font-family: var(--font-serif);
-    font-size: var(--text-prose);
-    line-height: var(--text-prose--lh);
-    color: var(--text-dim);
-    margin-bottom: 1.15em;
-  }
-
-  h1, h2, h3, h4, h5, h6,
-  .section-title, .sub-title,
-  .sidebar, .sidebar *, .nav-item,
-  .cover h1, .cover .sub,
-  .sidebar-logo h1 {
-    letter-spacing: 0;
-  }
-
-  /* ── SIDEBAR (LTR) ── */
-  .sidebar {
-    position: fixed;
-    top: 0; left: 0;
-    width: 265px;
-    height: 100vh;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .sidebar-logo {
-    padding: 22px 18px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .sidebar-logo .eyebrow {
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    color: var(--accent2);
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    margin-bottom: 7px;
-  }
-
-  .sidebar-logo h1 {
-    font-size: var(--text-body-sm);
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1.45;
-  }
-
-  .sidebar nav { padding: 10px 0; flex: 1; }
-
-  .nav-group {
-    padding: 14px 18px 5px;
-    font-family: var(--font-sans);
-    font-size: var(--text-small);
-    color: var(--text-muted);
-    letter-spacing: 0;
-    text-transform: none;
-  }
-
-  .nav-item {
-    display: block;
-    padding: 6px 18px 6px 26px;
-    color: var(--text-dim);
-    text-decoration: none;
-    font-size: var(--text-body-sm);
-    border-left: 2px solid transparent;
-    transition: all .12s;
-    line-height: 1.55;
-  }
-
-  .nav-item.l1 { padding-left: 18px; font-weight: 500; font-size: var(--text-body-sm); }
-  .nav-item.l2 { padding-left: 30px; font-size: var(--text-code); }
-
-  .nav-item:hover {
-    color: var(--text);
-    background: var(--surface2);
-    border-left-color: var(--accent);
-  }
-
-  .nav-item.active {
-    color: var(--text);
-    border-left-color: var(--accent);
-    background: var(--surface2);
-  }
-
-  .sidebar-footer {
-    padding: 12px 18px;
-    border-top: 1px solid var(--border);
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    color: var(--text-muted);
-    line-height: 1.65;
-  }
-
-  /* ── MAIN ── */
-  .main {
-    margin-left: 265px;
-    max-width: 940px;
-    padding: 48px 56px 140px;
-  }
-
-  /* ── COVER ── */
-  .cover {
-    margin-bottom: 60px;
-    padding-bottom: 36px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .cover .breadcrumb {
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    color: var(--text-muted);
-    margin-bottom: 18px;
-    letter-spacing: .06em;
-  }
-
-  .cover h1 {
-    font-size: var(--text-h1);
-    font-weight: 700;
-    line-height: var(--text-h1--lh);
-    color: var(--text);
-    margin-bottom: 14px;
-  }
-
-  .cover h1 .hl { color: var(--accent2); }
-
-  .cover .sub {
-    font-size: var(--text-body-sm);
-    color: var(--text-dim);
-    font-weight: 300;
-    max-width: 600px;
-    margin-bottom: 28px;
-    line-height: var(--text-body-sm--lh);
-  }
-
-  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
-
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 11px;
-    border-radius: 5px;
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    font-weight: 600;
-  }
-
-  .chip-green  { background: #0c2018; color: var(--accent-green); border: 1px solid #1a4030; }
-  .chip-blue   { background: #0f1e38; color: var(--accent);       border: 1px solid #1e3a6a; }
-  .chip-amber  { background: #201400; color: var(--accent3);      border: 1px solid #4a3000; }
-  .chip-red    { background: #1f0a0a; color: var(--accent-red);   border: 1px solid #4a1010; }
-
-  /* ── SECTION / SUBSECTION ── */
-  .section { margin-bottom: 68px; }
-
-  .section-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 26px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .section-num {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    background: var(--accent);
-    border-radius: 7px;
-    font-family: var(--font-mono);
-    font-size: var(--text-body);
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
-  }
-
-  .section-title {
-    font-size: var(--text-h2);
-    font-weight: 600;
-    line-height: var(--text-h2--lh);
-    color: var(--text);
-  }
-
-  .subsection { margin-bottom: 34px; }
-
-  .sub-title {
-    font-size: var(--text-h3);
-    font-weight: 600;
-    line-height: var(--text-h3--lh);
-    color: var(--text-dim);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .sub-title::before {
-    content: '';
-    display: inline-block;
-    width: 3px;
-    height: 15px;
-    background: var(--accent2);
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  /* ── NODE TAGS ── */
-  .node-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 10px;
-    border-radius: 5px;
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    font-weight: 700;
-    letter-spacing: .07em;
-    text-transform: uppercase;
-    vertical-align: middle;
-    margin-bottom: 10px;
-  }
-
-  .tag-all  { background: var(--tag-all-bg); color: var(--tag-all-fg); border: 1px solid #2a2a50; }
-  .tag-h1   { background: var(--tag-h1-bg);  color: var(--tag-h1-fg);  border: 1px solid #2a4880; }
-  .tag-h2   { background: var(--tag-h2-bg);  color: var(--tag-h2-fg);  border: 1px solid #1a4830; }
-  .tag-h3   { background: var(--tag-h3-bg);  color: var(--tag-h3-fg);  border: 1px solid #3a2868; }
-
-  /* ── CODE BLOCKS ── */
-  .code-block {
-    background: var(--code-bg);
-    border: 1px solid var(--code-border);
-    border-radius: 9px;
-    margin: 10px 0 20px;
-    overflow: hidden;
-  }
-
-  .cb-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 7px 14px;
-    background: #0e141e;
-    border-bottom: 1px solid var(--code-border);
-  }
-
-  .cb-label {
-    font-family: var(--font-mono);
-    font-size: var(--text-code);
-    color: var(--text-muted);
-    letter-spacing: .08em;
-  }
-
-  .cb-dots { display: flex; gap: 5px; }
-  .cb-dots span { width: 9px; height: 9px; border-radius: 50%; }
-  .cb-dots span:nth-child(1) { background: #ff5f57; }
-  .cb-dots span:nth-child(2) { background: #ffbd2e; }
-  .cb-dots span:nth-child(3) { background: #28c840; }
-
-  .code-block pre {
-    padding: 16px 20px;
-    overflow-x: auto;
-    font-family: var(--font-mono);
-    font-size: var(--text-code);
-    line-height: var(--text-code--lh);
-    color: #c9d1d9;
-    direction: ltr;
-    text-align: left;
-  }
-
-  .code-block pre .cm  { color: #6a9955; unicode-bidi: plaintext; }
-  .code-block pre .cm[dir="ltr"] { unicode-bidi: embed; direction: ltr; }
-  .code-block pre .kw  { color: #ff7b72; }
-  .code-block pre .val { color: #d2a8ff; }
-  .code-block pre .str { color: #a5d6ff; }
-  .code-block pre .ph  { color: var(--accent3); }
-
-  /* ── INLINE CODE ── */
-  code {
-    direction: ltr;
-    unicode-bidi: isolate;
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    background: var(--surface3);
-    color: #7dd3fc;
-    padding: 1px 6px;
-    border-radius: 3px;
-  }
-
-  /* ── CALLOUTS ── */
-  .callout {
-    display: flex;
-    gap: 12px;
-    padding: 13px 16px;
-    border-radius: 7px;
-    margin: 14px 0;
-    font-size: var(--text-body-sm);
-    line-height: var(--text-body-sm--lh);
-  }
-
-  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-
-  .callout.info    { background: #0a1828; border: 1px solid #1a3a5a; color: #7dd3fc; }
-  .callout.warn    { background: #1a1000; border: 1px solid #4a3000; color: #fcd34d; }
-  .callout.danger  { background: #1a0808; border: 1px solid #4a1010; color: #fca5a5; }
-  .callout.success { background: #081a10; border: 1px solid #1a4028; color: #6ee7b7; }
-
-  /* ── VERIFY ── */
-  .verify {
-    background: #081a10;
-    border: 1px solid #1a4028;
-    border-radius: 7px;
-    padding: 13px 16px;
-    margin: 14px 0 24px;
-  }
-
-  .verify .v-label {
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    color: var(--accent-green);
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .verify .v-label::before { content: '\2713'; font-size: var(--text-small); }
-
-  .verify p {
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    color: #6ee7b7;
-    line-height: 1.7;
-  }
-
-  .verify p[dir="ltr"] { text-align: left; }
-
-  .verify div.mono-text {
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    color: #6ee7b7;
-    line-height: 1.7;
-  }
-
-  .mono-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--text-small);
-    color: #6ee7b7;
-    font-family: var(--font-mono);
-  }
-
-  .mono-table td {
-    padding: 4px 8px;
-    border: 1px solid #1a4028;
-  }
-
-  /* ── BENEFIT CARDS ── */
-  .benefit-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin: 20px 0 30px;
-  }
-
-  .benefit-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    padding: 18px 20px;
-  }
-
-  .benefit-card .bc-icon {
-    font-size: 20px;
-    margin-bottom: 8px;
-    display: block;
-  }
-
-  .benefit-card .bc-title {
-    font-size: var(--text-body-sm);
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 7px;
-  }
-
-  .benefit-card .bc-body {
-    font-size: var(--text-small);
-    color: var(--text-dim);
-    line-height: 1.7;
-  }
-
-  .benefit-card.danger {
-    border-color: #5a1515;
-    background: #1a0a0a;
-  }
-
-  .benefit-card.danger .bc-title { color: var(--accent-red); }
-
-  /* ── STEP LISTS ── */
-  .step-list { counter-reset: steps; list-style: none; padding: 0; margin: 10px 0 18px; }
-
-  .step-list li {
-    counter-increment: steps;
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    margin-bottom: 10px;
-    color: var(--text-dim);
-  }
-
-  .step-list li > div { flex: 1; min-width: 0; }
-
-  .step-list li strong {
-    display: block;
-    color: var(--accent);
-    font-weight: 600;
-    font-size: var(--text-body-sm);
-    line-height: 1.5;
-    margin-bottom: 1px;
-  }
-
-  .step-list li .desc {
-    display: block;
-    font-size: var(--text-code);
-    line-height: 1.7;
-    color: var(--text-dim);
-  }
-
-  .step-list li .desc::before { content: '\2022 '; color: var(--text-muted); }
-
-  .step-list li::before {
-    content: counter(steps);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 22px;
-    height: 22px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    color: var(--accent2);
-    font-weight: 700;
-    margin-top: 2px;
-    flex-shrink: 0;
-  }
-
-  /* ── INFO TABLES ── */
-  .info-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 14px 0 24px;
-    font-size: var(--text-body-sm);
-    line-height: 1.8;
-  }
-
-  .info-table th {
-    text-align: left;
-    padding: 12px 16px;
-    background: var(--surface2);
-    color: var(--text-dim);
-    font-family: var(--font-mono);
-    font-size: var(--text-body-sm);
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .info-table td {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-dim);
-    vertical-align: top;
-  }
-
-  .info-table tr:hover td { background: var(--surface2); }
-  .info-table td code { font-size: var(--text-body-sm); }
-
-  /* ── ARCH BOX ── */
-  .arch-box {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 10px 14px;
-    margin: 8px 0;
-    font-family: var(--font-mono);
-    font-size: var(--text-code);
-    line-height: 1.65;
-    overflow-x: auto;
-    direction: ltr;
-    text-align: left;
-  }
-  .arch-box .ab-row {
-    padding: 1px 0;
-    white-space: nowrap;
-  }
-  .arch-box .ab-hl { color: #2a9a78; font-weight: 600; }
-  .arch-box .ab-accent { color: #3a6a9a; font-weight: 600; }
-  .arch-box .ab-dim { color: #4d607a; }
-  .arch-box .ab-dir { color: #5a8aaa; }
-  .arch-box .ab-comment { color: #6a9955; }
-  .arch-box > .arch-box { margin: 6px 0 2px; border-color: #2a4a6a; }
-  .arch-box > .arch-box > .arch-box { border-color: #1a3a5a; }
-
-  .light .arch-box .ab-hl { color: #1a6a50; }
-  .light .arch-box .ab-accent { color: #2a5070; }
-  .light .arch-box .ab-dim { color: #3a4a5a; }
-  .light .arch-box .ab-dir { color: #4a6a8a; }
-  .light .arch-box .ab-comment { color: #5a8a4a; }
-
-  /* ── DIVIDER ── */
-  hr.divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 56px 0;
-  }
-
-  /* ── PUNCTUATION ── */
-  .punct { font-weight: 700; }
-
-  /* ── THEME TOGGLE ── */
-  .theme-toggle {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    padding: 4px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 13px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: .12s;
-  }
-  .theme-toggle:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  /* ── SCROLLBAR ── */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-  /* ── LIGHT MODE OVERRIDES ── */
-  .light .chip-green  { background: #eaf5ea; border-color: #86efac; }
-  .light .chip-blue   { background: #eaf1fa; border-color: #93c5fd; }
-  .light .chip-amber  { background: #faf5ea; border-color: #fde68a; }
-  .light .chip-red    { background: #faeaea; border-color: #fca5a5; }
-
-  .light .tag-all  { border-color: #a5b4fc; }
-  .light .tag-h1   { border-color: #818cf8; }
-  .light .tag-h2   { border-color: #6ee7b7; }
-  .light .tag-h3   { border-color: #c4b5fd; }
-
-  .light .cb-head  { background: var(--surface2); }
-
-  .light .code-block pre     { color: #1e293b; }
-  .light .code-block pre .cm { color: #6a9955; }
-  .light .code-block pre .kw { color: #991b1b; }
-  .light .code-block pre .val{ color: #6b21a8; }
-  .light .code-block pre .str{ color: #1e3a8a; }
-  .light code { color: #1e3a8a; }
-
-  .light .callout.info    { background: #eaf1fa; border-color: #93c5fd; color: #1e40af; }
-  .light .callout.warn    { background: #faf5ea; border-color: #fde68a; color: #92400e; }
-  .light .callout.danger  { background: #faeaea; border-color: #fca5a5; color: #991b1b; }
-  .light .callout.success { background: #eaf5ea; border-color: #86efac; color: #166534; }
-
-  .light .verify { background: #eaf5ea; border-color: #86efac; }
-  .light .verify p,
-  .light .verify div.mono-text,
-  .light .mono-table { color: #16a34a; }
-  .light .mono-table td { border-color: #86efac; }
-
-  .light .benefit-card.danger { border-color: #fca5a5; background: #faeaea; }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 900px) {
-    .sidebar { display: none; }
-    .main { margin-right: 0; padding: 24px 20px 80px; }
-    .benefit-grid { grid-template-columns: 1fr; }
-  }
-
-  /* ── PRINT ── */
-  @media print {
-    .sidebar {
-      position: static;
-      float: right;
-      width: 280px;
-      height: auto;
-      border-left: none;
-      border-right: 1px solid var(--border);
-    }
-    .sidebar nav { font-size: 11px; }
-    .sidebar-logo { padding: 12px 14px; }
-    .sidebar-logo .eyebrow { font-size: 8px; }
-    .sidebar-logo h1 { font-size: 13px; }
-    .nav-group { padding: 8px 14px 3px; font-size: 9px; }
-    .nav-item { padding: 4px 14px; font-size: 11px; }
-    .sidebar-footer { display: none; }
-    .theme-toggle { display: none; }
-    .main {
-      margin-right: 0;
-      overflow: hidden;
-      padding: 24px 36px;
-      max-width: none;
-    }
-    .code-block { break-inside: avoid; }
-    .section, .subsection, .callout, .verify, .benefit-grid { page-break-inside: avoid; }
-    .cover { page-break-after: avoid; }
-  }
-</style>
+<style>@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');</style>
+<link rel="stylesheet" href="/css/common.css">
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="eyebrow">GitHub Actions Guide</div>
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <h1>GitHub Actions Guide</h1>
-      <button id="theme-toggle" class="theme-toggle" style="margin-top:0;flex-shrink:0;">🌙</button>
-      <button id="lang-toggle" class="theme-toggle" style="margin-top:0;flex-shrink:0;">العربية</button>
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <button class="topbar-hamburger" id="hamburger">☰</button>
+      <a class="topbar-brand" href="../../">📘 GitHub Actions Guide</a>
+      <button class="topbar-back" onclick="window.history.back()">← Back</button>
+    </div>
+    <div class="topbar-right">
+      <button id="theme-toggle" class="theme-toggle">🌙</button>
+      <button id="lang-toggle" class="theme-toggle">العربية</button>
     </div>
   </div>
-  <nav>
-    <a class="nav-item l1" href="../../" style="border-left-color:var(--accent2);margin-bottom:4px;">← Back to Guides</a>
-    <div class="nav-group">Fundamentals <span class="punct"> — </span> Concepts</div>
-    <a class="nav-item l1" href="#what-is">1<span class="punct"> . </span> What is GitHub Actions<span class="punct"> ? </span></a>
-    <a class="nav-item l1" href="#first-workflow">2<span class="punct"> . </span> Your First Workflow</a>
+</nav>
 
-    <div class="nav-group">Structure <span class="punct"> — </span> YAML</div>
-    <a class="nav-item l1" href="#yaml-structure">3<span class="punct"> . </span> YAML Structure <span class="punct"> — </span> Keyword Breakdown</a>
-    <a class="nav-item l2" href="#yaml-on">on <span class="punct"> — </span> When to Run<span class="punct"> ? </span></a>
-    <a class="nav-item l2" href="#yaml-jobs">jobs <span class="punct"> — </span> Tasks</a>
-    <a class="nav-item l2" href="#yaml-steps">steps <span class="punct"> — </span> Steps</a>
-    <a class="nav-item l2" href="#yaml-runs-on">runs-on <span class="punct"> — </span> Runner Type</a>
-    <a class="nav-item l2" href="#yaml-needs">needs <span class="punct"> — </span> Job Ordering</a>
-    <a class="nav-item l2" href="#yaml-matrix">matrix <span class="punct"> — </span> Multi-run</a>
-    <a class="nav-item l2" href="#yaml-env">env <span class="punct"> — </span> Variables</a>
-    <a class="nav-item l2" href="#yaml-permissions">permissions <span class="punct"> — </span> Permissions</a>
-    <a class="nav-item l2" href="#yaml-if">if <span class="punct"> — </span> Conditions</a>
-    <a class="nav-item l2" href="#yaml-defaults">defaults <span class="punct"> — </span> Defaults</a>
+<div class="topbar-drawer" id="topbar-drawer">
+  <div class="nav-group"><span class="gi">📘</span> Fundamentals <span class="punct"> — </span> Concepts</div>
+  <a class="nav-item l1" href="#what-is">1<span class="punct"> . </span> What is GitHub Actions<span class="punct"> ? </span></a>
+  <a class="nav-item l1" href="#first-workflow">2<span class="punct"> . </span> Your First Workflow</a>
 
-    <div class="nav-group">Practice <span class="punct"> — </span> Practical</div>
-    <a class="nav-item l1" href="#theory-to-practice">4<span class="punct"> . </span> From Theory to Practice</a>
-    <a class="nav-item l1" href="#runners">5<span class="punct"> . </span> GitHub-hosted vs Self-hosted</a>
-    <a class="nav-item l1" href="#linking">6<span class="punct"> . </span> Linking YAML Files</a>
+  <div class="nav-group"><span class="gi">📐</span> Structure <span class="punct"> — </span> YAML</div>
+  <a class="nav-item l1" href="#yaml-structure">3<span class="punct"> . </span> YAML Structure <span class="punct"> — </span> Keyword Breakdown</a>
+  <a class="nav-item l2" href="#yaml-on">on <span class="punct"> — </span> When to Run<span class="punct"> ? </span></a>
+  <a class="nav-item l2" href="#yaml-jobs">jobs <span class="punct"> — </span> Tasks</a>
+  <a class="nav-item l2" href="#yaml-steps">steps <span class="punct"> — </span> Steps</a>
+  <a class="nav-item l2" href="#yaml-runs-on">runs-on <span class="punct"> — </span> Runner Type</a>
+  <a class="nav-item l2" href="#yaml-needs">needs <span class="punct"> — </span> Job Ordering</a>
+  <a class="nav-item l2" href="#yaml-matrix">matrix <span class="punct"> — </span> Multi-run</a>
+  <a class="nav-item l2" href="#yaml-env">env <span class="punct"> — </span> Variables</a>
+  <a class="nav-item l2" href="#yaml-permissions">permissions <span class="punct"> — </span> Permissions</a>
+  <a class="nav-item l2" href="#yaml-if">if <span class="punct"> — </span> Conditions</a>
+  <a class="nav-item l2" href="#yaml-defaults">defaults <span class="punct"> — </span> Defaults</a>
 
-    <div class="nav-group">Expert <span class="punct"> — </span> Advanced</div>
-    <a class="nav-item l1" href="#mistakes">7<span class="punct"> . </span> Common Mistakes &amp; Debugging</a>
-    <a class="nav-item l1" href="#context">8<span class="punct"> . </span> Context Objects</a>
-    <a class="nav-item l1" href="#security">9<span class="punct"> . </span> Security in GitHub Actions</a>
+  <div class="nav-group"><span class="gi">🔧</span> Practice <span class="punct"> — </span> Practical</div>
+  <a class="nav-item l1" href="#theory-to-practice">4<span class="punct"> . </span> From Theory to Practice</a>
+  <a class="nav-item l1" href="#runners">5<span class="punct"> . </span> GitHub-hosted vs Self-hosted</a>
+  <a class="nav-item l1" href="#linking">6<span class="punct"> . </span> Linking YAML Files</a>
 
-    <div class="nav-group">Questions <span class="punct"> — </span> Interview</div>
-    <a class="nav-item l1" href="#interview">10<span class="punct"> . </span> Interview Questions</a>
-    <a class="nav-item l1" href="#quickref">11<span class="punct"> . </span> Quick Reference</a>
-  </nav>
-  <div class="sidebar-footer">
-    Complete GitHub Actions Guide<br>
-    CI/CD · YAML · DevOps<br>
-    Educational Reference
+  <div class="nav-group"><span class="gi">🧠</span> Expert <span class="punct"> — </span> Advanced</div>
+  <a class="nav-item l1" href="#mistakes">7<span class="punct"> . </span> Common Mistakes &amp; Debugging</a>
+  <a class="nav-item l1" href="#context">8<span class="punct"> . </span> Context Objects</a>
+  <a class="nav-item l1" href="#security">9<span class="punct"> . </span> Security in GitHub Actions</a>
+
+  <div class="nav-group"><span class="gi">❓</span> Questions <span class="punct"> — </span> Interview</div>
+  <a class="nav-item l1" href="#interview">10<span class="punct"> . </span> Interview Questions</a>
+  <a class="nav-item l1" href="#quickref">11<span class="punct"> . </span> Quick Reference</a>
+</div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <button class="sidebar-toggle" id="sidebar-toggle">◀</button>
+  </div>
+  <div class="sidebar-scroll">
+    <div class="sidebar-logo">
+      <div class="eyebrow">DevOps / CI-CD</div>
+      <h1>GitHub Actions<br>From Zero to CI/CD</h1>
+    </div>
+    <nav>
+      <div class="nav-group"><span class="gi">📘</span> Fundamentals <span class="punct"> — </span> Concepts</div>
+      <a class="nav-item l1" href="#what-is">1<span class="punct"> . </span> What is GitHub Actions<span class="punct"> ? </span></a>
+      <a class="nav-item l1" href="#first-workflow">2<span class="punct"> . </span> Your First Workflow</a>
+
+      <div class="nav-group"><span class="gi">📐</span> Structure <span class="punct"> — </span> YAML</div>
+      <a class="nav-item l1" href="#yaml-structure">3<span class="punct"> . </span> YAML Structure <span class="punct"> — </span> Keyword Breakdown</a>
+      <a class="nav-item l2" href="#yaml-on">on <span class="punct"> — </span> When to Run<span class="punct"> ? </span></a>
+      <a class="nav-item l2" href="#yaml-jobs">jobs <span class="punct"> — </span> Tasks</a>
+      <a class="nav-item l2" href="#yaml-steps">steps <span class="punct"> — </span> Steps</a>
+      <a class="nav-item l2" href="#yaml-runs-on">runs-on <span class="punct"> — </span> Runner Type</a>
+      <a class="nav-item l2" href="#yaml-needs">needs <span class="punct"> — </span> Job Ordering</a>
+      <a class="nav-item l2" href="#yaml-matrix">matrix <span class="punct"> — </span> Multi-run</a>
+      <a class="nav-item l2" href="#yaml-env">env <span class="punct"> — </span> Variables</a>
+      <a class="nav-item l2" href="#yaml-permissions">permissions <span class="punct"> — </span> Permissions</a>
+      <a class="nav-item l2" href="#yaml-if">if <span class="punct"> — </span> Conditions</a>
+      <a class="nav-item l2" href="#yaml-defaults">defaults <span class="punct"> — </span> Defaults</a>
+
+      <div class="nav-group"><span class="gi">🔧</span> Practice <span class="punct"> — </span> Practical</div>
+      <a class="nav-item l1" href="#theory-to-practice">4<span class="punct"> . </span> From Theory to Practice</a>
+      <a class="nav-item l1" href="#runners">5<span class="punct"> . </span> GitHub-hosted vs Self-hosted</a>
+      <a class="nav-item l1" href="#linking">6<span class="punct"> . </span> Linking YAML Files</a>
+
+      <div class="nav-group"><span class="gi">🧠</span> Expert <span class="punct"> — </span> Advanced</div>
+      <a class="nav-item l1" href="#mistakes">7<span class="punct"> . </span> Common Mistakes &amp; Debugging</a>
+      <a class="nav-item l1" href="#context">8<span class="punct"> . </span> Context Objects</a>
+      <a class="nav-item l1" href="#security">9<span class="punct"> . </span> Security in GitHub Actions</a>
+
+      <div class="nav-group"><span class="gi">❓</span> Questions <span class="punct"> — </span> Interview</div>
+      <a class="nav-item l1" href="#interview">10<span class="punct"> . </span> Interview Questions</a>
+      <a class="nav-item l1" href="#quickref">11<span class="punct"> . </span> Quick Reference</a>
+    </nav>
+    <div class="sidebar-footer" id="sidebar-footer">GitHub Actions Guide v2.0</div>
   </div>
 </aside>
 
@@ -2179,6 +1499,27 @@ if (sections.length && navLinks.length) {
     if (best && navMap[best]) navMap[best].classList.add('active');
   }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
   sections.forEach(s => obs.observe(s));
+}
+
+// ── Sidebar collapse toggle ──
+const sidebarEl = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const savedCollapse = localStorage.getItem('sidebar-collapsed');
+if (savedCollapse === 'true' && sidebarEl) sidebarEl.classList.add('collapsed');
+if (sidebarToggle && sidebarEl) {
+  if (sidebarEl.classList.contains('collapsed')) sidebarToggle.textContent = '▶';
+  sidebarToggle.addEventListener('click', () => {
+    sidebarEl.classList.toggle('collapsed');
+    sidebarToggle.textContent = sidebarEl.classList.contains('collapsed') ? '▶' : '◀';
+    localStorage.setItem('sidebar-collapsed', sidebarEl.classList.contains('collapsed'));
+  });
+}
+
+// ── Hamburger toggle ──
+const ham = document.getElementById('hamburger');
+const drawer = document.getElementById('topbar-drawer');
+if (ham && drawer) {
+  ham.addEventListener('click', () => drawer.classList.toggle('open'));
 }
 
 // ── Theme toggle ──

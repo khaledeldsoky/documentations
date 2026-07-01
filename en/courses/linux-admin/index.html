@@ -4,742 +4,124 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Linux Administration Guide</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
-
-  :root {
-    --bg:           #0a0d12;
-    --surface:      #0f1318;
-    --surface2:     #141a22;
-    --surface3:     #192030;
-    --border:       #222c40;
-    --border2:      #2a3850;
-    --accent:       #4f8ef7;
-    --accent2:      #00c2a8;
-    --accent3:      #f0a500;
-    --accent-red:   #e85555;
-    --accent-green: #22c97a;
-    --text:         #dce6f5;
-    --text-dim:     #8899b5;
-    --text-muted:   #4d607a;
-    --code-bg:      #080b0f;
-    --code-border:  #1a2233;
-
-    --heavy1:       #1a2f4a;
-    --heavy2:       #1a3a2a;
-    --heavy3:       #2a1f3a;
-    --heavy1-accent:#4f8ef7;
-    --heavy2-accent:#22c97a;
-    --heavy3-accent:#b87fff;
-
-    --tag-h1-bg:    #1a2f4a; --tag-h1-fg: #7ab8ff;
-    --tag-h2-bg:    #0f2a1a; --tag-h2-fg: #4de89a;
-    --tag-h3-bg:    #221840; --tag-h3-fg: #c89fff;
-    --tag-all-bg:   #1a1a2e; --tag-all-fg: #a0a8e8;
-
-    --font-sans:    system-ui, sans-serif;
-    --font-serif:   Georgia, serif;
-    --font-mono:    'JetBrains Mono', monospace;
-
-    --text-body:    1.125rem;
-    --text-body--lh: 1.8;
-    --text-prose:   1.0625rem;
-    --text-prose--lh: 1.9;
-    --text-h1:      2rem;
-    --text-h1--lh:  1.2;
-    --text-h2:      1.5rem;
-    --text-h2--lh:  1.35;
-    --text-h3:      1.25rem;
-    --text-h3--lh:  1.5;
-    --text-code:    0.8125rem;
-    --text-code--lh: 1.6;
-    --text-body-sm: 0.875rem;
-    --text-body-sm--lh: 1.7;
-    --text-small:   0.8125rem;
-    --text-small--lh: 1.35;
-  }
-
-  :root { color-scheme: dark; }
-
-  .light {
-    --bg:           #f5f7fa;
-    --surface:      #ffffff;
-    --surface2:     #eef1f6;
-    --surface3:     #e4e8f0;
-    --border:       #d0d5dd;
-    --border2:      #b8bdc8;
-    --accent:       #2563eb;
-    --accent2:      #0d9488;
-    --accent3:      #d97706;
-    --accent-red:   #dc2626;
-    --accent-green: #16a34a;
-    --text:         #0f172a;
-    --text-dim:     #475569;
-    --text-muted:   #94a3b8;
-    --code-bg:      #f1f5f9;
-    --code-border:  #cbd5e1;
-
-    --heavy1:       #dbeafe;
-    --heavy2:       #d1fae5;
-    --heavy3:       #ede9fe;
-    --heavy1-accent:#2563eb;
-    --heavy2-accent:#16a34a;
-    --heavy3-accent:#9333ea;
-
-    --tag-h1-bg:    #dbeafe; --tag-h1-fg: #1d4ed8;
-    --tag-h2-bg:    #d1fae5; --tag-h2-fg: #15803d;
-    --tag-h3-bg:    #ede9fe; --tag-h3-fg: #7c3aed;
-    --tag-all-bg:   #e0e7ff; --tag-all-fg: #4338ca;
-
-    color-scheme: light;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-sans);
-    font-size: var(--text-body);
-    line-height: var(--text-body--lh);
-    min-height: 100vh;
-  }
-
-  .prose {
-    font-family: var(--font-serif);
-    font-size: var(--text-prose);
-    line-height: var(--text-prose--lh);
-    color: var(--text-dim);
-    margin-bottom: 1.15em;
-  }
-
-  h1, h2, h3, h4, h5, h6,
-  .section-title, .sub-title,
-  .sidebar, .sidebar *, .nav-item,
-  .cover h1, .cover .sub,
-  .sidebar-logo h1 {
-    letter-spacing: 0;
-  }
-
-  /* ── SIDEBAR (LTR) ── */
-  .sidebar {
-    position: fixed;
-    top: 0; left: 0;
-    width: 265px;
-    height: 100vh;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .sidebar-logo {
-    padding: 22px 18px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .sidebar-logo .eyebrow {
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    color: var(--accent2);
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    margin-bottom: 7px;
-  }
-
-  .sidebar-logo h1 {
-    font-size: var(--text-body-sm);
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1.45;
-  }
-
-  .sidebar nav { padding: 10px 0; flex: 1; }
-
-  .nav-group {
-    padding: 14px 18px 5px;
-    font-family: var(--font-sans);
-    font-size: var(--text-small);
-    color: var(--text-muted);
-    letter-spacing: 0;
-    text-transform: none;
-  }
-
-  .nav-item {
-    display: block;
-    padding: 6px 18px 6px 26px;
-    color: var(--text-dim);
-    text-decoration: none;
-    font-size: var(--text-body-sm);
-    border-left: 2px solid transparent;
-    transition: all .12s;
-    line-height: 1.55;
-  }
-
-  .nav-item.l1 { padding-left: 18px; font-weight: 500; font-size: var(--text-body-sm); }
-  .nav-item.l2 { padding-left: 30px; font-size: var(--text-code); }
-
-  .nav-item:hover {
-    color: var(--text);
-    background: var(--surface2);
-    border-left-color: var(--accent);
-  }
-
-  .nav-item.active {
-    color: var(--text);
-    border-left-color: var(--accent);
-    background: var(--surface2);
-  }
-
-  .sidebar-footer {
-    padding: 12px 18px;
-    border-top: 1px solid var(--border);
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    color: var(--text-muted);
-    line-height: 1.65;
-  }
-
-  /* ── MAIN (LTR) ── */
-  .main {
-    margin-left: 265px;
-    max-width: 940px;
-    padding: 48px 56px 140px;
-  }
-
-  /* ── COVER ── */
-  .cover {
-    margin-bottom: 60px;
-    padding-bottom: 36px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .cover .breadcrumb {
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    color: var(--text-muted);
-    margin-bottom: 18px;
-    letter-spacing: .06em;
-  }
-
-  .cover h1 {
-    font-size: var(--text-h1);
-    font-weight: 700;
-    line-height: var(--text-h1--lh);
-    color: var(--text);
-    margin-bottom: 14px;
-  }
-
-  .cover h1 .hl { color: var(--accent2); }
-
-  .cover .sub {
-    font-size: var(--text-body-sm);
-    color: var(--text-dim);
-    font-weight: 300;
-    max-width: 600px;
-    margin-bottom: 28px;
-    line-height: var(--text-body-sm--lh);
-  }
-
-  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
-
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 11px;
-    border-radius: 5px;
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    font-weight: 600;
-  }
-
-  .chip-green  { background: #0c2018; color: var(--accent-green); border: 1px solid #1a4030; }
-  .chip-blue   { background: #0f1e38; color: var(--accent);       border: 1px solid #1e3a6a; }
-  .chip-amber  { background: #201400; color: var(--accent3);      border: 1px solid #4a3000; }
-  .chip-red    { background: #1f0a0a; color: var(--accent-red);   border: 1px solid #4a1010; }
-
-  /* ── SECTION ── */
-  .section { margin-bottom: 68px; }
-
-  .section-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 26px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .section-num {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    background: var(--accent);
-    border-radius: 7px;
-    font-family: var(--font-mono);
-    font-size: var(--text-body);
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
-  }
-
-  .section-title {
-    font-size: var(--text-h2);
-    font-weight: 600;
-    line-height: var(--text-h2--lh);
-    color: var(--text);
-  }
-
-  .subsection { margin-bottom: 34px; }
-
-  .sub-title {
-    font-size: var(--text-h3);
-    font-weight: 600;
-    line-height: var(--text-h3--lh);
-    color: var(--text-dim);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .sub-title::before {
-    content: '';
-    display: inline-block;
-    width: 3px;
-    height: 15px;
-    background: var(--accent2);
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  /* ── NODE TAGS ── */
-  .node-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 10px;
-    border-radius: 5px;
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    font-weight: 700;
-    letter-spacing: .07em;
-    text-transform: uppercase;
-    vertical-align: middle;
-    margin-bottom: 10px;
-  }
-
-  .tag-all  { background: var(--tag-all-bg); color: var(--tag-all-fg); border: 1px solid #2a2a50; }
-  .tag-h1   { background: var(--tag-h1-bg);  color: var(--tag-h1-fg);  border: 1px solid #2a4880; }
-  .tag-h2   { background: var(--tag-h2-bg);  color: var(--tag-h2-fg);  border: 1px solid #1a4830; }
-  .tag-h3   { background: var(--tag-h3-bg);  color: var(--tag-h3-fg);  border: 1px solid #3a2868; }
-
-  /* ── CODE BLOCKS ── */
-  .code-block {
-    background: var(--code-bg);
-    border: 1px solid var(--code-border);
-    border-radius: 9px;
-    margin: 10px 0 20px;
-    overflow: hidden;
-  }
-
-  .cb-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 7px 14px;
-    background: #0e141e;
-    border-bottom: 1px solid var(--code-border);
-  }
-
-  .cb-label {
-    font-family: var(--font-mono);
-    font-size: var(--text-code);
-    color: var(--text-muted);
-    letter-spacing: .08em;
-  }
-
-  .cb-dots { display: flex; gap: 5px; }
-  .cb-dots span { width: 9px; height: 9px; border-radius: 50%; }
-  .cb-dots span:nth-child(1) { background: #ff5f57; }
-  .cb-dots span:nth-child(2) { background: #ffbd2e; }
-  .cb-dots span:nth-child(3) { background: #28c840; }
-
-  .code-block pre {
-    padding: 16px 20px;
-    overflow-x: auto;
-    font-family: var(--font-mono);
-    font-size: var(--text-code);
-    line-height: var(--text-code--lh);
-    color: #c9d1d9;
-    direction: ltr;
-    text-align: left;
-  }
-
-  .code-block pre .cm  { color: #6a9955; unicode-bidi: plaintext; }
-  .code-block pre .cm[dir="ltr"] { unicode-bidi: embed; direction: ltr; }
-  .code-block pre .kw  { color: #ff7b72; }
-  .code-block pre .val { color: #d2a8ff; }
-  .code-block pre .str { color: #a5d6ff; }
-  .code-block pre .ph  { color: var(--accent3); }
-  code { direction: ltr; unicode-bidi: isolate; font-family: var(--font-mono); font-size: 0.875rem; background: var(--surface3); color: #7dd3fc; padding: 1px 6px; border-radius: 3px; }
-  .punct { font-weight: 700; }
-
-  /* ── CALLOUTS ── */
-  .callout {
-    display: flex;
-    gap: 12px;
-    padding: 13px 16px;
-    border-radius: 7px;
-    margin: 14px 0;
-    font-size: var(--text-body-sm);
-    line-height: var(--text-body-sm--lh);
-  }
-  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-  .callout.info    { background: #0a1828; border: 1px solid #1a3a5a; color: #7dd3fc; }
-  .callout.warn    { background: #1a1000; border: 1px solid #4a3000; color: #fcd34d; }
-  .callout.danger  { background: #1a0808; border: 1px solid #4a1010; color: #fca5a5; }
-  .callout.success { background: #081a10; border: 1px solid #1a4028; color: #6ee7b7; }
-
-  /* ── VERIFY BLOCK ── */
-  .verify {
-    background: #081a10;
-    border: 1px solid #1a4028;
-    border-radius: 7px;
-    padding: 13px 16px;
-    margin: 14px 0 24px;
-  }
-
-  .verify .v-label {
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    color: var(--accent-green);
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .verify .v-label::before { content: '\2713'; font-size: var(--text-small); }
-
-  .verify p {
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    color: #6ee7b7;
-    line-height: 1.7;
-  }
-
-  .verify p[dir="ltr"] { text-align: left; }
-
-  .verify div.mono-text {
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    color: #6ee7b7;
-    line-height: 1.7;
-  }
-
-  .mono-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--text-small);
-    color: #6ee7b7;
-    font-family: var(--font-mono);
-  }
-
-  .mono-table td {
-    padding: 4px 8px;
-    border: 1px solid #1a4028;
-  }
-
-  /* ── BENEFIT CARDS ── */
-  .benefit-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin: 20px 0 30px;
-  }
-
-  .benefit-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    padding: 18px 20px;
-  }
-
-  .benefit-card .bc-icon {
-    font-size: 20px;
-    margin-bottom: 8px;
-    display: block;
-  }
-
-  .benefit-card .bc-title {
-    font-size: var(--text-body-sm);
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 7px;
-  }
-
-  .benefit-card .bc-body {
-    font-size: var(--text-small);
-    color: var(--text-dim);
-    line-height: 1.7;
-  }
-
-  .benefit-card.danger {
-    border-color: #5a1515;
-    background: #1a0a0a;
-  }
-
-  .benefit-card.danger .bc-title { color: var(--accent-red); }
-
-  /* ── STEP LIST ── */
-  .step-list { counter-reset: steps; list-style: none; padding: 0; margin: 10px 0 18px; }
-
-  .step-list li {
-    counter-increment: steps;
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    margin-bottom: 10px;
-    color: var(--text-dim);
-  }
-
-  .step-list li > div { flex: 1; min-width: 0; }
-
-  .step-list li strong {
-    display: block;
-    color: var(--accent);
-    font-weight: 600;
-    font-size: var(--text-body-sm);
-    line-height: 1.5;
-    margin-bottom: 1px;
-  }
-
-  .step-list li .desc {
-    display: block;
-    font-size: var(--text-code);
-    line-height: 1.7;
-    color: var(--text-dim);
-  }
-
-  .step-list li .desc::before { content: '• '; color: var(--text-muted); }
-
-  .step-list li::before {
-    content: counter(steps);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 22px;
-    height: 22px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    font-family: var(--font-mono);
-    font-size: var(--text-small);
-    color: var(--accent2);
-    font-weight: 700;
-    margin-top: 2px;
-    flex-shrink: 0;
-  }
-
-  /* ── INFO TABLE ── */
-  .info-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 14px 0 24px;
-    font-size: var(--text-body-sm);
-    line-height: 1.8;
-  }
-
-  .info-table th {
-    text-align: left;
-    padding: 12px 16px;
-    background: var(--surface2);
-    color: var(--text-dim);
-    font-family: var(--font-mono);
-    font-size: var(--text-body-sm);
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .info-table td {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-dim);
-    vertical-align: top;
-  }
-
-  .info-table tr:hover td { background: var(--surface2); }
-  .info-table td code { font-size: var(--text-body-sm); }
-
-  hr.divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 56px 0;
-  }
-
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-  /* ── LIGHT MODE OVERRIDES ── */
-
-  .light .chip-green  { background: #ecfdf5; border-color: #86efac; }
-  .light .chip-blue   { background: #eff6ff; border-color: #93c5fd; }
-  .light .chip-amber  { background: #fefce8; border-color: #fde68a; }
-  .light .chip-red    { background: #fef2f2; border-color: #fca5a5; }
-
-  .light .tag-all  { border-color: #c7d2fe; }
-  .light .tag-h1   { border-color: #a5b4fc; }
-  .light .tag-h2   { border-color: #86efac; }
-  .light .tag-h3   { border-color: #d8b4fe; }
-
-  .light .cb-head  { background: var(--surface2); }
-
-  .light .code-block pre     { color: #1e293b; }
-  .light .code-block pre .cm { color: #6a9955; }
-  .light .code-block pre .kw { color: #dc2626; }
-  .light .code-block pre .val{ color: #9333ea; }
-  .light .code-block pre .str{ color: #2563eb; }
-  .light code { color: #2563eb; }
-
-  .light .callout.info    { background: #eff6ff; border-color: #93c5fd; color: #1e40af; }
-  .light .callout.warn    { background: #fefce8; border-color: #fde68a; color: #92400e; }
-  .light .callout.danger  { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
-  .light .callout.success { background: #f0fdf4; border-color: #86efac; color: #166534; }
-
-  .light .verify { background: #f0fdf4; border-color: #86efac; }
-  .light .verify p,
-  .light .verify div.mono-text,
-  .light .mono-table { color: #16a34a; }
-  .light .mono-table td { border-color: #86efac; }
-
-  .light .benefit-card.danger { border-color: #fca5a5; background: #fef2f2; }
-
-  /* ── THEME TOGGLE ── */
-  .theme-toggle {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    padding: 4px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 13px;
-    margin-top: 10px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: .12s;
-  }
-  .theme-toggle:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  @media (max-width: 900px) {
-    .sidebar { display: none; }
-    .main { margin-left: 0; padding: 24px 20px 80px; }
-    .benefit-grid { grid-template-columns: 1fr; }
-  }
-
-  @media print {
-    .sidebar {
-      position: static;
-      float: left;
-      width: 280px;
-      height: auto;
-      border-right: none;
-      border-left: 1px solid var(--border);
-    }
-    .sidebar nav { font-size: 11px; }
-    .sidebar-logo { padding: 12px 14px; }
-    .sidebar-logo .eyebrow { font-size: 8px; }
-    .sidebar-logo h1 { font-size: 13px; }
-    .nav-group { padding: 8px 14px 3px; font-size: 9px; }
-    .nav-item { padding: 4px 14px; font-size: 11px; }
-    .sidebar-footer { display: none; }
-    .theme-toggle { display: none; }
-    .main {
-      margin-left: 0;
-      overflow: hidden;
-      padding: 24px 36px;
-      max-width: none;
-    }
-    .code-block { break-inside: avoid; }
-    .section { page-break-inside: avoid; }
-    .subsection { page-break-inside: avoid; }
-    .callout { page-break-inside: avoid; }
-    .verify { page-break-inside: avoid; }
-    .benefit-grid { page-break-inside: avoid; }
-    .cover { page-break-after: avoid; }
-  }
-</style>
+<style>@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');</style>
+<link rel="stylesheet" href="/css/common.css">
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════
-     SIDEBAR
-══════════════════════════════════════════ -->
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="eyebrow">Linux Administration</div>
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <h1>Linux System Administration Guide</h1>
-      <button id="theme-toggle" class="theme-toggle" style="margin-top:0;flex-shrink:0;">🌙</button>
-      <button id="lang-toggle" class="theme-toggle" style="margin-top:0;flex-shrink:0;">العربية</button>
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <button class="topbar-hamburger" id="hamburger">☰</button>
+      <a class="topbar-brand" href="../../">📘 Linux Administration</a>
+      <button class="topbar-back" onclick="window.history.back()">← Back</button>
+    </div>
+    <div class="topbar-right">
+      <button id="theme-toggle" class="theme-toggle">🌙</button>
+      <button id="lang-toggle" class="theme-toggle">العربية</button>
     </div>
   </div>
-  <nav>
-    <a class="nav-item l1" href="../../" style="border-left-color:var(--accent2);margin-bottom:4px;">← Back to Guides</a>
-    <div class="nav-group">System</div>
-    <a class="nav-item l1" href="#boot-process">0<span class="punct"> . </span> Boot Process</a>
-    <a class="nav-item l1" href="#filesystem">1<span class="punct"> . </span> Filesystem — Linux File Structure</a>
-    <a class="nav-item l1" href="#links">2<span class="punct"> . </span> Hard Link vs Symbolic Link</a>
-    <a class="nav-item l1" href="#ssh">3<span class="punct"> . </span> SSH — Secure Connection</a>
-    <a class="nav-item l1" href="#users">4<span class="punct"> . </span> User &amp; Group Management</a>
-    <a class="nav-item l1" href="#permissions">5<span class="punct"> . </span> Permissions</a>
-    <a class="nav-item l1" href="#packages">6<span class="punct"> . </span> Package Management</a>
-    <a class="nav-item l1" href="#selinux">7<span class="punct"> . </span> SELinux</a>
-    <a class="nav-item l1" href="#kernel">8<span class="punct"> . </span> Kernel &amp; Modules</a>
-    <a class="nav-item l1" href="#logging">9<span class="punct"> . </span> Logging &amp; Logrotate</a>
+</nav>
 
-    <div class="nav-group">Network</div>
-    <a class="nav-item l1" href="#firewall">10<span class="punct"> . </span> Firewall — Port Management</a>
-    <a class="nav-item l1" href="#ports">11<span class="punct"> . </span> Network Ports</a>
-    <a class="nav-item l1" href="#networking">12<span class="punct"> . </span> Networking Config</a>
+<div class="topbar-drawer" id="topbar-drawer">
+  <div class="nav-group"><span class="gi">🖥️</span> System <span class="punct"> — </span> System</div>
+  <a class="nav-item l1" href="#boot-process">0<span class="punct"> . </span> Boot Process</a>
+  <a class="nav-item l1" href="#filesystem">1<span class="punct"> . </span> Filesystem — Linux File Structure</a>
+  <a class="nav-item l1" href="#links">2<span class="punct"> . </span> Hard Link vs Symbolic Link</a>
+  <a class="nav-item l1" href="#ssh">3<span class="punct"> . </span> SSH — Secure Connection</a>
+  <a class="nav-item l1" href="#users">4<span class="punct"> . </span> User &amp; Group Management</a>
+  <a class="nav-item l1" href="#permissions">5<span class="punct"> . </span> Permissions</a>
+  <a class="nav-item l1" href="#packages">6<span class="punct"> . </span> Package Management</a>
+  <a class="nav-item l1" href="#selinux">7<span class="punct"> . </span> SELinux</a>
+  <a class="nav-item l1" href="#kernel">8<span class="punct"> . </span> Kernel &amp; Modules</a>
+  <a class="nav-item l1" href="#logging">9<span class="punct"> . </span> Logging &amp; Logrotate</a>
 
-    <div class="nav-group">Storage</div>
-    <a class="nav-item l1" href="#xfs-ext4">13<span class="punct"> . </span> XFS vs Ext4</a>
-    <a class="nav-item l1" href="#storage">14<span class="punct"> . </span> Storage Management</a>
+  <div class="nav-group"><span class="gi">🌐</span> Network <span class="punct"> — </span> Network</div>
+  <a class="nav-item l1" href="#firewall">10<span class="punct"> . </span> Firewall — Port Management</a>
+  <a class="nav-item l1" href="#ports">11<span class="punct"> . </span> Network Ports</a>
+  <a class="nav-item l1" href="#networking">12<span class="punct"> . </span> Networking Config</a>
 
-    <div class="nav-group">Services</div>
-    <a class="nav-item l1" href="#systemd">15<span class="punct"> . </span> Systemd Deep Dive</a>
-    <a class="nav-item l1" href="#cron">16<span class="punct"> . </span> Cron &amp; At</a>
-    <a class="nav-item l1" href="#nginx-apache">17<span class="punct"> . </span> Nginx vs Apache</a>
+  <div class="nav-group"><span class="gi">💾</span> Storage <span class="punct"> — </span> Storage</div>
+  <a class="nav-item l1" href="#xfs-ext4">13<span class="punct"> . </span> XFS vs Ext4</a>
+  <a class="nav-item l1" href="#storage">14<span class="punct"> . </span> Storage Management</a>
 
-    <div class="nav-group">Performance</div>
-    <a class="nav-item l1" href="#performance">18<span class="punct"> . </span> Performance Diagnostics</a>
-    <a class="nav-item l1" href="#process-management">19<span class="punct"> . </span> Process Management</a>
+  <div class="nav-group"><span class="gi">⚙️</span> Services <span class="punct"> — </span> Services</div>
+  <a class="nav-item l1" href="#systemd">15<span class="punct"> . </span> Systemd Deep Dive</a>
+  <a class="nav-item l1" href="#cron">16<span class="punct"> . </span> Cron &amp; At</a>
+  <a class="nav-item l1" href="#nginx-apache">17<span class="punct"> . </span> Nginx vs Apache</a>
 
-    <div class="nav-group">Troubleshooting</div>
-    <a class="nav-item l1" href="#troubleshooting">20<span class="punct"> . </span> Troubleshooting Services</a>
-    <a class="nav-item l1" href="#http-errors">21<span class="punct"> . </span> HTTP 400 vs 500</a>
-    <a class="nav-item l1" href="#rescue-grub">22<span class="punct"> . </span> Rescue Mode &amp; GRUB</a>
-  </nav>
-  <div class="sidebar-footer">
-    Linux Administration Reference Document<br>
-    Prepared<span class="punct"> : </span> Practical Guide · RHCSA<br>
-    Linux · SSH · Systemd · Networking
+  <div class="nav-group"><span class="gi">📊</span> Performance <span class="punct"> — </span> Performance</div>
+  <a class="nav-item l1" href="#performance">18<span class="punct"> . </span> Performance Diagnostics</a>
+  <a class="nav-item l1" href="#process-management">19<span class="punct"> . </span> Process Management</a>
+
+  <div class="nav-group"><span class="gi">🛠️</span> Troubleshooting <span class="punct"> — </span> Troubleshooting</div>
+  <a class="nav-item l1" href="#troubleshooting">20<span class="punct"> . </span> Troubleshooting Services</a>
+  <a class="nav-item l1" href="#http-errors">21<span class="punct"> . </span> HTTP 400 vs 500</a>
+  <a class="nav-item l1" href="#rescue-grub">22<span class="punct"> . </span> Rescue Mode &amp; GRUB</a>
+
+  <div class="nav-group"><span class="gi">🔧</span> Commands <span class="punct"> — </span> Essential Commands</div>
+  <a class="nav-item l1" href="#essential-commands">23<span class="punct"> . </span> Essential Commands</a>
+  <a class="nav-item l2" href="#commands-awk">awk</a>
+  <a class="nav-item l2" href="#commands-grep-find">grep &amp; find</a>
+  <a class="nav-item l2" href="#commands-cut-tr-base64">cut &amp; tr &amp; base64</a>
+  <a class="nav-item l2" href="#commands-alias-dig">alias &amp; dig</a>
+  <a class="nav-item l2" href="#commands-scp">scp</a>
+</div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <button class="sidebar-toggle" id="sidebar-toggle">◀</button>
+  </div>
+  <div class="sidebar-scroll">
+    <div class="sidebar-logo">
+      <div class="eyebrow">DevOps / Linux</div>
+      <h1>Linux Administration<br>Complete Guide</h1>
+    </div>
+    <nav>
+      <div class="nav-group"><span class="gi">🖥️</span> System <span class="punct"> — </span> System</div>
+      <a class="nav-item l1" href="#boot-process">0<span class="punct"> . </span> Boot Process</a>
+      <a class="nav-item l1" href="#filesystem">1<span class="punct"> . </span> Filesystem</a>
+      <a class="nav-item l1" href="#links">2<span class="punct"> . </span> Hard Link vs Symbolic Link</a>
+      <a class="nav-item l1" href="#ssh">3<span class="punct"> . </span> SSH</a>
+      <a class="nav-item l1" href="#users">4<span class="punct"> . </span> User &amp; Group Management</a>
+      <a class="nav-item l1" href="#permissions">5<span class="punct"> . </span> Permissions</a>
+      <a class="nav-item l1" href="#packages">6<span class="punct"> . </span> Package Management</a>
+      <a class="nav-item l1" href="#selinux">7<span class="punct"> . </span> SELinux</a>
+      <a class="nav-item l1" href="#kernel">8<span class="punct"> . </span> Kernel &amp; Modules</a>
+      <a class="nav-item l1" href="#logging">9<span class="punct"> . </span> Logging &amp; Logrotate</a>
+
+      <div class="nav-group"><span class="gi">🌐</span> Network <span class="punct"> — </span> Network</div>
+      <a class="nav-item l1" href="#firewall">10<span class="punct"> . </span> Firewall <span class="punct"> — </span> Port Management</a>
+      <a class="nav-item l1" href="#ports">11<span class="punct"> . </span> Network Ports</a>
+      <a class="nav-item l1" href="#networking">12<span class="punct"> . </span> Networking Config</a>
+
+      <div class="nav-group"><span class="gi">💾</span> Storage <span class="punct"> — </span> Storage</div>
+      <a class="nav-item l1" href="#xfs-ext4">13<span class="punct"> . </span> XFS vs Ext4</a>
+      <a class="nav-item l1" href="#storage">14<span class="punct"> . </span> Storage Management</a>
+
+      <div class="nav-group"><span class="gi">⚙️</span> Services <span class="punct"> — </span> Services</div>
+      <a class="nav-item l1" href="#systemd">15<span class="punct"> . </span> Systemd Deep Dive</a>
+      <a class="nav-item l1" href="#cron">16<span class="punct"> . </span> Cron &amp; At</a>
+      <a class="nav-item l1" href="#nginx-apache">17<span class="punct"> . </span> Nginx vs Apache</a>
+
+      <div class="nav-group"><span class="gi">📊</span> Performance <span class="punct"> — </span> Performance</div>
+      <a class="nav-item l1" href="#performance">18<span class="punct"> . </span> Performance Diagnostics</a>
+      <a class="nav-item l1" href="#process-management">19<span class="punct"> . </span> Process Management</a>
+
+      <div class="nav-group"><span class="gi">🛠️</span> Troubleshooting <span class="punct"> — </span> Troubleshooting</div>
+      <a class="nav-item l1" href="#troubleshooting">20<span class="punct"> . </span> Troubleshooting Services</a>
+      <a class="nav-item l1" href="#http-errors">21<span class="punct"> . </span> HTTP 400 vs 500</a>
+      <a class="nav-item l1" href="#rescue-grub">22<span class="punct"> . </span> Rescue Mode &amp; GRUB</a>
+
+      <div class="nav-group"><span class="gi">🔧</span> Commands <span class="punct"> — </span> Essential Commands</div>
+      <a class="nav-item l1" href="#essential-commands">23<span class="punct"> . </span> Essential Commands</a>
+      <a class="nav-item l2" href="#commands-awk">awk</a>
+      <a class="nav-item l2" href="#commands-grep-find">grep &amp; find</a>
+      <a class="nav-item l2" href="#commands-cut-tr-base64">cut &amp; tr &amp; base64</a>
+      <a class="nav-item l2" href="#commands-alias-dig">alias &amp; dig</a>
+      <a class="nav-item l2" href="#commands-scp">scp</a>
+    </nav>
+    <div class="sidebar-footer" id="sidebar-footer">Linux Administration Guide v2.0</div>
   </div>
 </aside>
 
@@ -4828,6 +4210,165 @@ exec /sbin/init</pre>
 
   <hr class="divider">
 
+  <!-- ═══════════════════════════════════════
+       SECTION 23 — ESSENTIAL COMMANDS
+  ═══════════════════════════════════════ -->
+  <section class="section" id="essential-commands">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">23</div>
+      <h2 class="section-title">Essential Commands</h2>
+    </div>
+
+    <p class="prose">
+      A quick reference for common Linux commands used in daily system administration and scripting<span class="punct"> . </span>
+    </p>
+
+    <!-- ── awk ── -->
+    <div class="subsection" id="commands-awk">
+      <div class="sub-title">awk <span class="punct"> — </span> Text Processing</div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">Basic awk usage</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># Print each line of the file</span>
+awk '{print $0}' file.txt
+
+<span class="cm"># Print lines matching a pattern</span>
+awk '/pattern/ {print $0}' file.txt
+
+<span class="cm"># Print the first column</span>
+awk '{print $1}' file.txt
+
+<span class="cm"># Print first and third columns</span>
+awk '{print $1, $3}' file.txt
+
+<span class="cm"># Use ":" as field separator, print first field</span>
+awk -F":" '{print $1}' /etc/passwd
+
+<span class="cm"># Sum values of the first field</span>
+awk '{sum += $1} END {print sum}' file.txt</pre>
+      </div>
+    </div>
+
+    <!-- ── grep & find ── -->
+    <div class="subsection" id="commands-grep-find">
+      <div class="sub-title">grep &amp; find <span class="punct"> — </span> Search</div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">grep — search file contents</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># Search for "error" in all files in current dir</span>
+grep "error" *
+
+<span class="cm"># Search recursively, show only filenames</span>
+grep -rl "500" /var/log</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">find — search for files</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># Find and delete all .doc files</span>
+find . -type f -name "*.doc" -delete
+
+<span class="cm"># Find and run sed on all .txt files</span>
+find . -type f -name '*.txt' -exec sed -i 's/old/new/g' {} +
+
+<span class="cm"># Print only filenames (no path)</span>
+find . -type f -printf "%f\n"</pre>
+      </div>
+    </div>
+
+    <!-- ── cut & tr & base64 ── -->
+    <div class="subsection" id="commands-cut-tr-base64">
+      <div class="sub-title">cut &amp; tr &amp; base64 <span class="punct"> — </span> Text Manipulation</div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">cut — extract columns</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># Extract fields 2 and onward using : delimiter</span>
+cut -d: -f2-</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">tr — translate characters</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># Replace all 'a' with 'A'</span>
+tr 'a' 'A'</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">base64 — encode / decode</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># Encode a string</span>
+echo -n "my-secret-key" | base64
+
+<span class="cm"># Encode a file</span>
+base64 config.json > config.b64
+
+<span class="cm"># Decode a Base64 string</span>
+echo "bXktc2VjcmV0LWtleQ==" | base64 --decode</pre>
+      </div>
+    </div>
+
+    <!-- ── alias & dig ── -->
+    <div class="subsection" id="commands-alias-dig">
+      <div class="sub-title">alias &amp; dig <span class="punct"> — </span> Shell Helpers</div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">alias — create shortcuts</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># Create and remove an alias</span>
+alias khaled="ls -a"
+unalias khaled</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">dig — DNS lookup</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># Get your public IP via DNS</span>
+dig +short myip.opendns.com @resolver1.opendns.com</pre>
+      </div>
+    </div>
+
+    <!-- ── scp ── -->
+    <div class="subsection" id="commands-scp">
+      <div class="sub-title">scp <span class="punct"> — </span> Secure File Transfer</div>
+
+      <div class="code-block">
+        <div class="cb-head">
+          <span class="cb-label">Copy files over SSH</span>
+          <div class="cb-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><span class="cm"># Copy a local file to a remote server with a specific key</span>
+scp -i /path/to/key /path/to/local/file user@remote:/remote/path
+
+<span class="cm"># Copy a directory recursively</span>
+scp -r /path/to/local/dir ssh_host:/remote/path
+
+<span class="cm"># Copy a file from remote to local</span>
+scp user@remote:/remote/file .</pre>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
   <footer>
     <div class="footer-content">
       <div class="footer-links">
@@ -4854,6 +4395,7 @@ exec /sbin/init</pre>
         <a href="#troubleshooting">20<span class="punct"> . </span> Troubleshooting</a>
         <a href="#http-errors">21<span class="punct"> . </span> HTTP 400 vs 500</a>
         <a href="#rescue-grub">22<span class="punct"> . </span> Rescue Mode &amp; GRUB</a>
+        <a href="#essential-commands">23<span class="punct"> . </span> Essential Commands</a>
       </div>
       <div class="footer-copy">
         <p style="margin:0;">Linux Administration Guide — Reference for System Administrators</p>
@@ -4881,6 +4423,27 @@ if (sections.length && navLinks.length) {
     if (best && navMap[best]) navMap[best].classList.add('active');
   }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
   sections.forEach(s => obs.observe(s));
+}
+
+// ── Sidebar collapse toggle ──
+const sidebarEl = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const savedCollapse = localStorage.getItem('sidebar-collapsed');
+if (savedCollapse === 'true' && sidebarEl) sidebarEl.classList.add('collapsed');
+if (sidebarToggle && sidebarEl) {
+  if (sidebarEl.classList.contains('collapsed')) sidebarToggle.textContent = '▶';
+  sidebarToggle.addEventListener('click', () => {
+    sidebarEl.classList.toggle('collapsed');
+    sidebarToggle.textContent = sidebarEl.classList.contains('collapsed') ? '▶' : '◀';
+    localStorage.setItem('sidebar-collapsed', sidebarEl.classList.contains('collapsed'));
+  });
+}
+
+// ── Hamburger toggle ──
+const ham = document.getElementById('hamburger');
+const drawer = document.getElementById('topbar-drawer');
+if (ham && drawer) {
+  ham.addEventListener('click', () => drawer.classList.toggle('open'));
 }
 
 // ── Theme toggle ──

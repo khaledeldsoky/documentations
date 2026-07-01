@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenShift 4.14 UPI on vSphere — Installation Guide</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');</style>
+<link rel="stylesheet" href="/css/common.css">
+<style>.var-input{background:transparent;border:none;color:var(--amber);font:inherit;width:auto;min-width:80px;outline:1px dashed transparent;padding:2px;cursor:text}.var-input:focus{outline:1px dashed var(--amber)}</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <button class="topbar-hamburger" id="hamburger">☰</button>
+      <a class="topbar-brand" href="../../">📘 OpenShift 4.14 UPI on vSphere</a>
+      <button class="topbar-back" onclick="window.history.back()">← Back</button>
+    </div>
+    <div class="topbar-right">
+      <button id="theme-toggle" class="theme-toggle">🌙</button>
+      <button id="lang-toggle" class="theme-toggle">العربية</button>
+    </div>
+  </div>
+</nav>
+
+<div class="topbar-drawer" id="topbar-drawer">
+  <div class="nav-group"><span class="gi">📋</span> Getting Started</div>
+  <a class="nav-item l1" href="#variables">1<span class="punct"> . </span> Variables</a>
+  <a class="nav-item l1" href="#prerequisites">2<span class="punct"> . </span> Prerequisites</a>
+  <a class="nav-item l1" href="#wsl-prep">3<span class="punct"> . </span> WSL Setup</a>
+
+  <div class="nav-group"><span class="gi">🔌</span> vSphere</div>
+  <a class="nav-item l1" href="#vsphere-prep">4<span class="punct"> . </span> vSphere Environment</a>
+  <a class="nav-item l1" href="#nfs-haproxy">5<span class="punct"> . </span> HAProxy + NFS VM</a>
+  <a class="nav-item l1" href="#ocp-vms">6<span class="punct"> . </span> OpenShift VMs</a>
+
+  <div class="nav-group"><span class="gi">🚀</span> Installation</div>
+  <a class="nav-item l1" href="#ignition">7<span class="punct"> . </span> Generate Ignition Configs</a>
+  <a class="nav-item l1" href="#cluster-install">8<span class="punct"> . </span> Cluster Install</a>
+  <a class="nav-item l1" href="#postinstall">9<span class="punct"> . </span> Post-Install</a>
+
+  <div class="nav-group"><span class="gi">⚙️</span> Operations</div>
+  <a class="nav-item l1" href="#cleanup">10<span class="punct"> . </span> Cleanup</a>
+  <a class="nav-item l1" href="#troubleshooting">11<span class="punct"> . </span> Troubleshooting</a>
+  <a class="nav-item l1" href="#tests">12<span class="punct"> . </span> Verification Tests</a>
+</div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <button class="sidebar-toggle" id="sidebar-toggle">◀</button>
+  </div>
+  <div class="sidebar-scroll">
+    <div class="sidebar-logo">
+      <div class="eyebrow">DevOps / OpenShift</div>
+      <h1>OpenShift 4.14 UPI<br>on vSphere</h1>
+    </div>
+    <nav>
+      <div class="nav-group"><span class="gi">📋</span> Getting Started</div>
+      <a class="nav-item l1" href="#variables">1<span class="punct"> . </span> Variables</a>
+      <a class="nav-item l1" href="#prerequisites">2<span class="punct"> . </span> Prerequisites</a>
+      <a class="nav-item l1" href="#wsl-prep">3<span class="punct"> . </span> WSL Setup</a>
+
+      <div class="nav-group"><span class="gi">🔌</span> vSphere</div>
+      <a class="nav-item l1" href="#vsphere-prep">4<span class="punct"> . </span> vSphere Environment</a>
+      <a class="nav-item l1" href="#nfs-haproxy">5<span class="punct"> . </span> HAProxy + NFS VM</a>
+      <a class="nav-item l1" href="#ocp-vms">6<span class="punct"> . </span> OpenShift VMs</a>
+
+      <div class="nav-group"><span class="gi">🚀</span> Installation</div>
+      <a class="nav-item l1" href="#ignition">7<span class="punct"> . </span> Generate Ignition Configs</a>
+      <a class="nav-item l1" href="#cluster-install">8<span class="punct"> . </span> Cluster Install</a>
+      <a class="nav-item l1" href="#postinstall">9<span class="punct"> . </span> Post-Install</a>
+
+      <div class="nav-group"><span class="gi">⚙️</span> Operations</div>
+      <a class="nav-item l1" href="#cleanup">10<span class="punct"> . </span> Cleanup</a>
+      <a class="nav-item l1" href="#troubleshooting">11<span class="punct"> . </span> Troubleshooting</a>
+      <a class="nav-item l1" href="#tests">12<span class="punct"> . </span> Verification Tests</a>
+    </nav>
+    <div class="sidebar-footer" id="sidebar-footer">OpenShift 4.14 UPI Guide v1.0</div>
+  </div>
+</aside>
+
+<main class="main">
+
+<div class="cover">
+  <div class="breadcrumb">devops / openshift / upi</div>
+  <h1>OpenShift 4.14 <span class="hl">UPI</span> on vSphere</h1>
+  <p class="sub">User Provisioned Infrastructure — HAProxy, NFS, RHCOS on vSphere</p>
+  <div class="chip-row">
+    <span class="chip chip-blue">OpenShift 4.14</span>
+    <span class="chip chip-green">vSphere UPI</span>
+    <span class="chip chip-amber">HAProxy + NFS</span>
+    <span class="chip chip-red">govc</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SECTION 1 — VARIABLES
+════════════════════════════════ -->
+<section class="section" id="variables">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <h2 class="section-title">Variables</h2>
+  </div>
+  <p class="prose">
+    All changeable values are shown in <span class="ph">amber</span><span class="punct"> . </span>
+    Replace with your environment<span class="punct"> . </span>A local copy is available at <code>/home/khaled/ocp4-install/variables-reference.md</code><span class="punct"> . </span>
+  </p>
+
+  <table class="info-table">
+    <thead><tr><th>Category</th><th>Variable</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="9">vSphere</td><td><code>VCENTER_IP</code></td><td><span class="ph">&lt;VCENTER_IP&gt;</span></td></tr>
+      <tr><td><code>VCENTER_USER</code></td><td><span class="ph">&lt;VCENTER_USER&gt;</span></td></tr>
+      <tr><td><code>VCENTER_PASSWORD</code></td><td><span class="ph">&lt;VCENTER_PASSWORD&gt;</span></td></tr>
+      <tr><td><code>DATACENTER</code></td><td><span class="ph">&lt;DATACENTER&gt;</span></td></tr>
+      <tr><td><code>CLUSTER</code></td><td><span class="ph">&lt;CLUSTER&gt;</span></td></tr>
+      <tr><td><code>DATASTORE</code></td><td><span class="ph">&lt;DATASTORE&gt;</span></td></tr>
+      <tr><td><code>NETWORK</code></td><td><span class="ph">&lt;NETWORK&gt;</span></td></tr>
+      <tr><td><code>VM_FOLDER</code></td><td><span class="ph">&lt;VM_FOLDER&gt;</span></td></tr>
+      <tr><td><code>CENTOS_ISO</code></td><td><span class="ph">&lt;CENTOS_ISO&gt;</span></td></tr>
+
+      <tr><td rowspan="7">Network</td><td><code>GATEWAY</code></td><td><span class="ph">&lt;GATEWAY&gt;</span></td></tr>
+      <tr><td><code>SUBNET_MASK</code></td><td><span class="ph">&lt;SUBNET_MASK&gt;</span></td></tr>
+      <tr><td><code>DNS1</code></td><td><span class="ph">&lt;DNS1&gt;</span></td></tr>
+      <tr><td><code>DNS2</code></td><td><span class="ph">&lt;DNS2&gt;</span></td></tr>
+      <tr><td><code>DOMAIN</code></td><td><span class="ph">&lt;DOMAIN&gt;</span></td></tr>
+      <tr><td><code>CLUSTER_NAME</code></td><td><span class="ph">&lt;CLUSTER_NAME&gt;</span></td></tr>
+      <tr><td><code>BASE_DOMAIN</code></td><td><span class="ph">&lt;BASE_DOMAIN&gt;</span></td></tr>
+
+      <tr><td rowspan="11">Node IPs</td><td><code>NFS_HAPROXY_IP</code></td><td><span class="ph">&lt;NFS_HAPROXY_IP&gt;</span></td></tr>
+      <tr><td><code>API_IP</code></td><td><span class="ph">&lt;API_IP&gt;</span></td></tr>
+      <tr><td><code>APPS_IP</code></td><td><span class="ph">&lt;APPS_IP&gt;</span></td></tr>
+      <tr><td><code>BOOTSTRAP_IP</code></td><td><span class="ph">&lt;BOOTSTRAP_IP&gt;</span></td></tr>
+      <tr><td><code>MASTER_0_IP</code></td><td><span class="ph">&lt;MASTER_0_IP&gt;</span></td></tr>
+      <tr><td><code>MASTER_1_IP</code></td><td><span class="ph">&lt;MASTER_1_IP&gt;</span></td></tr>
+      <tr><td><code>MASTER_2_IP</code></td><td><span class="ph">&lt;MASTER_2_IP&gt;</span></td></tr>
+      <tr><td><code>WORKER_0_IP</code></td><td><span class="ph">&lt;WORKER_0_IP&gt;</span></td></tr>
+      <tr><td><code>WORKER_1_IP</code></td><td><span class="ph">&lt;WORKER_1_IP&gt;</span></td></tr>
+      <tr><td><code>WSL_IP</code></td><td><span class="ph">&lt;WSL_IP&gt;</span></td></tr>
+      <tr><td><code>NFS_HAPROXY_USER</code></td><td><span class="ph">&lt;NFS_HAPROXY_USER&gt;</span></td></tr>
+
+      <tr><td rowspan="3">Credentials</td><td><code>SSH_KEY_PATH</code></td><td><span class="ph">&lt;SSH_KEY_PATH&gt;</span></td></tr>
+      <tr><td><code>OCP_ADMIN_PASS</code></td><td><span class="ph">&lt;OCP_ADMIN_PASS&gt;</span></td></tr>
+      <tr><td><code>PULL_SECRET</code></td><td><span class="ph" data-var="PULL_SECRET">&lt;PULL_SECRET&gt;</span></td></tr>
+
+      <tr><td rowspan="3">Paths</td><td><code>OCP4_DIR</code></td><td><span class="ph">&lt;OCP4_DIR&gt;</span></td></tr>
+      <tr><td><code>NFS_EXPORT</code></td><td><span class="ph">&lt;NFS_EXPORT&gt;</span></td></tr>
+      <tr><td><code>SSH_KEY</code></td><td><span class="ph">&lt;SSH_KEY&gt;</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════════════════════════════════
+     SECTION 2 — PREREQUISITES
+════════════════════════════════ -->
+<section class="section" id="prerequisites">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <h2 class="section-title">Prerequisites</h2>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Hardware Requirements</div>
+    <table class="info-table">
+      <thead><tr><th>Node</th><th>vCPU</th><th>RAM</th><th>Disk</th><th>OS</th></tr></thead>
+      <tbody>
+        <tr><td>nfs-haproxy</td><td>4</td><td>8 GB</td><td>40 GB + 100 GB <span class="punct"> ( </span>NFS<span class="punct"> ) </span></td><td>CentOS 9</td></tr>
+        <tr><td>bootstrap</td><td>4</td><td>16 GB</td><td>120 GB</td><td>RHCOS</td></tr>
+        <tr><td>master <span class="punct"> ( </span>&times;3<span class="punct"> ) </span></td><td>4</td><td>16 GB</td><td>120 GB</td><td>RHCOS</td></tr>
+        <tr><td>worker <span class="punct"> ( </span>&times;2<span class="punct"> ) </span></td><td>2</td><td>8 GB</td><td>120 GB</td><td>RHCOS</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Software <span class="punct"> ( </span>on WSL<span class="punct"> ) </span></div>
+    <ul class="step-list">
+      <li><div><strong>govc</strong><span class="desc">VMware CLI for vSphere management</span></div></li>
+      <li><div><strong>openshift-install</strong><span class="desc">OpenShift 4.14 installer binary</span></div></li>
+      <li><div><strong>oc</strong><span class="desc">OpenShift CLI</span></div></li>
+      <li><div><strong>SSH key</strong><span class="desc">ed25519 key at <code>~/.ssh/openshift</code></span></div></li>
+    </ul>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">DNS Records</div>
+    <p class="prose">These records must exist in your external DNS <span class="punct"> ( </span><span class="ph" data-var="DNS1">172.16.6.70</span><span class="punct"> , </span><span class="ph" data-var="DNS2">172.16.1.16</span><span class="punct"> ) </span>before starting<span class="punct"> . </span></p>
+    <table class="info-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>api.ocp4.example.com</td><td>A</td><td><span class="ph" data-var="API_IP">172.20.0.220</span></td></tr>
+        <tr><td>api-int.ocp4.example.com</td><td>A</td><td><span class="ph" data-var="API_IP">172.20.0.220</span></td></tr>
+        <tr><td>*.apps.ocp4.example.com</td><td>A</td><td><span class="ph" data-var="APPS_IP">172.20.0.221</span></td></tr>
+        <tr><td>bootstrap.ocp4.example.com</td><td>A</td><td><span class="ph" data-var="BOOTSTRAP_IP">172.20.0.230</span></td></tr>
+        <tr><td>master-0.ocp4.example.com</td><td>A</td><td><span class="ph" data-var="MASTER_0_IP">172.20.0.231</span></td></tr>
+        <tr><td>master-1.ocp4.example.com</td><td>A</td><td><span class="ph" data-var="MASTER_1_IP">172.20.0.232</span></td></tr>
+        <tr><td>master-2.ocp4.example.com</td><td>A</td><td><span class="ph" data-var="MASTER_2_IP">172.20.0.233</span></td></tr>
+        <tr><td>worker-0.ocp4.example.com</td><td>A</td><td><span class="ph" data-var="WORKER_0_IP">172.20.0.234</span></td></tr>
+        <tr><td>worker-1.ocp4.example.com</td><td>A</td><td><span class="ph" data-var="WORKER_1_IP">172.20.0.235</span></td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn">
+      <span class="callout-icon">&#9888;</span>
+      <div>Also add reverse DNS <span class="punct"> ( </span>PTR<span class="punct"> ) </span>records if possible<span class="punct"> . </span>OpenShift uses reverse DNS for node hostname resolution<span class="punct"> . </span></div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Verify vSphere Values with govc</div>
+    <p class="prose">Run these from WSL to confirm your vSphere environment is correct<span class="punct"> . </span></p>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL — Verify vCenter</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="cm"># Set govc env vars</span>
+<span class="kw">export</span> GOVC_URL=<span class="ph" data-var="VCENTER_IP">172.20.0.101</span>
+<span class="kw">export</span> GOVC_USERNAME=<span class="ph" data-var="VCENTER_USER">administrator@vsphere.local</span>
+<span class="kw">export</span> GOVC_PASSWORD=<span class="ph" data-var="VCENTER_PASSWORD">Root@123</span>
+<span class="kw">export</span> GOVC_INSECURE=<span class="val">true</span>
+
+<span class="cm"># Test connection</span>
+govc about
+govc datacenter.info
+govc cluster.info
+govc datastore.info
+govc network.info</pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p><code>govc about</code> returns vCenter version and build<span class="punct"> . </span></p>
+      <p>All <code>govc *.info</code> commands return the expected names<span class="punct"> . </span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     SECTION 3 — WSL SETUP
+════════════════════════════════ -->
+<section class="section" id="wsl-prep">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <h2 class="section-title">WSL Setup</h2>
+  </div>
+  <p class="prose">All commands in this section run on <strong>WSL</strong><span class="punct"> . </span></p>
+
+  <div class="subsection">
+    <div class="sub-title">Install govc</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>curl -sL https://github.com/vmware/govmomi/releases/latest/download/govc_$(uname -s)_$(uname -m).tar.gz | tar -C /usr/local/bin -xz govc
+chmod +x /usr/local/bin/govc
+govc version</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Download OpenShift Installer &amp; CLI</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="kw">export</span> OCP4_DIR=<span class="ph" data-var="OCP4_DIR">/home/khaled/ocp4-install</span>
+mkdir -p $OCP4_DIR
+cd $OCP4_DIR
+
+wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.14.0/openshift-client-linux.tar.gz
+wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.14.0/openshift-install-linux.tar.gz
+
+tar xzf openshift-client-linux.tar.gz -C /usr/local/bin/
+tar xzf openshift-install-linux.tar.gz -C /usr/local/bin/
+chmod +x /usr/local/bin/{oc,kubectl,openshift-install}
+
+openshift-install version
+oc version</pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p><code>openshift-install version</code> shows <code>4.14.x</code></p>
+      <p><code>oc version</code> shows client version<span class="punct"> . </span></p>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Generate SSH Key</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>ssh-keygen -t ed25519 -f ~/.ssh/openshift -N <span class="str">""</span> -C <span class="str">"khaled@ocp4"</span>
+cat ~/.ssh/openshift.pub</pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p>Files exist: <code>~/.ssh/openshift</code> and <code>~/.ssh/openshift.pub</code></p>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Create setup-env.sh</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL — /home/khaled/ocp4-install/setup-env.sh</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="cm">#!/usr/bin/env bash</span>
+<span class="kw">export</span> GOVC_URL=<span class="ph" data-var="VCENTER_IP">172.20.0.101</span>
+<span class="kw">export</span> GOVC_USERNAME=<span class="ph" data-var="VCENTER_USER">administrator@vsphere.local</span>
+<span class="kw">export</span> GOVC_PASSWORD=<span class="ph" data-var="VCENTER_PASSWORD">Root@123</span>
+<span class="kw">export</span> GOVC_DATACENTER=<span class="ph" data-var="DATACENTER">Datacenter</span>
+<span class="kw">export</span> GOVC_CLUSTER=<span class="ph" data-var="CLUSTER">Openshift</span>
+<span class="kw">export</span> GOVC_DATASTORE=<span class="ph" data-var="DATASTORE">hdd</span>
+<span class="kw">export</span> GOVC_NETWORK=<span class="ph" data-var="NETWORK">VM Network</span>
+<span class="kw">export</span> GOVC_INSECURE=<span class="val">true</span>
+<span class="kw">export</span> GOVC_VM_FOLDER=<span class="ph" data-var="VM_FOLDER">/Datacenter/vm/</span>
+<span class="kw">export</span> OCP4_DIR=<span class="ph" data-var="OCP4_DIR">/home/khaled/ocp4-install</span>
+<span class="kw">eval</span> <span class="str">"$(ssh-agent -s)"</span>
+ssh-add ~/.ssh/openshift</pre>
+    </div>
+    <div class="callout info">
+      <span class="callout-icon">&#8505;</span>
+      <div>Always run <code>source /home/khaled/ocp4-install/setup-env.sh</code> at the start of each session<span class="punct"> . </span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     SECTION 4 — VSPHERE ENVIRONMENT
+════════════════════════════════ -->
+<section class="section" id="vsphere-prep">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <h2 class="section-title">vSphere Environment</h2>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Download RHCOS OVA</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="kw">export</span> RHCOS_VERSION=4.14.0
+cd $OCP4_DIR/rhcos
+wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.14/${RHCOS_VERSION}/rhcos-${RHCOS_VERSION}-x86_64-vmware.x86_64.ova
+sha256sum rhcos-${RHCOS_VERSION}-x86_64-vmware.x86_64.ova</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Import RHCOS OVA as Template</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>govc import.ova \
+  -name rhcos-4.14-template \
+  -ds <span class="ph" data-var="DATASTORE">hdd</span> \
+  -pool /<span class="ph" data-var="DATACENTER">Datacenter</span>/host/<span class="ph" data-var="CLUSTER">Openshift</span>/Resources \
+  -folder /<span class="ph" data-var="DATACENTER">Datacenter</span>/vm/ \
+  $OCP4_DIR/rhcos/rhcos-4.14.0-x86_64-vmware.x86_64.ova
+
+govc vm.markastemplate rhcos-4.14-template</pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p><code>govc vm.info rhcos-4.14-template</code> shows the VM as a template<span class="punct"> . </span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     SECTION 5 — HAPROXY + NFS VM
+════════════════════════════════ -->
+<section class="section" id="nfs-haproxy">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <h2 class="section-title">HAProxy + NFS VM</h2>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Create VM from ISO</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>govc vm.create \
+  -name nfs-haproxy \
+  -m <span class="val">8192</span> -c <span class="val">4</span> \
+  -disk <span class="str">"40G"</span> \
+  -disk.controller pvscsi \
+  -net "<span class="ph" data-var="NETWORK">VM Network</span>" \
+  -pool /<span class="ph" data-var="DATACENTER">Datacenter</span>/host/<span class="ph" data-var="CLUSTER">Openshift</span>/Resources \
+  -folder /<span class="ph" data-var="DATACENTER">Datacenter</span>/vm/ \
+  -on <span class="val">false</span>
+
+govc vm.dvd.insert \
+  -vm nfs-haproxy \
+  -ds <span class="ph" data-var="DATASTORE">hdd</span> \
+  <span class="ph" data-var="CENTOS_ISO">/hdd/isos/CentOS-Stream-9-latest-x86_64-dvd1.iso</span>
+
+govc vm.disk.create \
+  -vm nfs-haproxy \
+  -name nfs-haproxy/nfs-data \
+  -size <span class="str">"100G"</span> -ds <span class="ph" data-var="DATASTORE">hdd</span> -thin
+
+govc vm.power -on nfs-haproxy
+govc vm.console nfs-haproxy</pre>
+    </div>
+    <div class="callout warn">
+      <span class="callout-icon">&#9888;</span>
+      <div>Open the console URL in a browser to install CentOS 9 manually<span class="punct"> . </span>Set hostname <code>nfs-haproxy.ocp4.example.com</code> and user <code>khaled</code><span class="punct"> . </span></div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Configure Static IP</div>
+    <p class="prose">Run on the <strong>nfs-haproxy VM</strong> via SSH<span class="punct"> . </span></p>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">nfs-haproxy</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>ssh -i ~/.ssh/openshift <span class="ph" data-var="NFS_HAPROXY_USER">khaled</span>@<span class="ph" data-var="NFS_HAPROXY_IP">172.20.0.210</span>
+
+sudo nmcli con mod ens192 \
+  ipv4.addresses <span class="ph" data-var="NFS_HAPROXY_IP">172.20.0.210</span>/16 \
+  ipv4.gateway <span class="ph" data-var="GATEWAY">172.20.0.254</span> \
+  ipv4.dns <span class="ph" data-var="DNS1">172.16.6.70</span> \
+  ipv4.dns-search ocp4.example.com \
+  ipv4.method manual
+
+sudo nmcli con down ens192 && sudo nmcli con up ens192
+ip addr show ens192</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Install Packages</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">nfs-haproxy</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>sudo dnf install -y haproxy nfs-utils nginx firewalld policycoreutils-python-utils
+sudo systemctl enable --now haproxy nfs-server nginx firewalld</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Configure HAProxy</div>
+    <p class="prose">Replace <code>/etc/haproxy/haproxy.cfg</code> on nfs-haproxy VM<span class="punct"> . </span></p>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">nfs-haproxy — /etc/haproxy/haproxy.cfg</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="kw">global</span>
+    log /dev/log local0
+    chroot /var/lib/haproxy
+    stats socket /run/haproxy/admin.sock mode 660
+    user haproxy group haproxy
+    daemon
+
+<span class="kw">defaults</span>
+    log global
+    mode tcp
+    option tcplog
+    timeout connect 10s
+    timeout client 30s
+    timeout server 30s
+
+<span class="kw">frontend</span> openshift-api
+    bind *:6443
+    default_backend openshift-api
+
+<span class="kw">backend</span> openshift-api
+    balance source
+    server bootstrap <span class="ph" data-var="BOOTSTRAP_IP">172.20.0.230</span>:6443 check
+    server master-0 <span class="ph" data-var="MASTER_0_IP">172.20.0.231</span>:6443 check
+    server master-1 <span class="ph" data-var="MASTER_1_IP">172.20.0.232</span>:6443 check
+    server master-2 <span class="ph" data-var="MASTER_2_IP">172.20.0.233</span>:6443 check
+
+<span class="kw">frontend</span> mcs
+    bind *:22623
+    default_backend mcs
+
+<span class="kw">backend</span> mcs
+    balance source
+    server bootstrap <span class="ph" data-var="BOOTSTRAP_IP">172.20.0.230</span>:22623 check
+    server master-0 <span class="ph" data-var="MASTER_0_IP">172.20.0.231</span>:22623 check
+    server master-1 <span class="ph" data-var="MASTER_1_IP">172.20.0.232</span>:22623 check
+    server master-2 <span class="ph" data-var="MASTER_2_IP">172.20.0.233</span>:22623 check
+
+<span class="kw">frontend</span> openshift-ingress
+    bind *:443
+    bind *:80
+    default_backend openshift-ingress
+
+<span class="kw">backend</span> openshift-ingress
+    balance source
+    server worker-0 <span class="ph" data-var="WORKER_0_IP">172.20.0.234</span>:443 check
+    server worker-1 <span class="ph" data-var="WORKER_1_IP">172.20.0.235</span>:443 check</pre>
+    </div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">nfs-haproxy — Apply config</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>sudo cp /etc/haproxy/haproxy.cfg <span class="str">"$(date +%Y%m%d-%H%M)".bak</span>
+<span class="cm"># Paste config content above, then:</span>
+sudo haproxy -c -f /etc/haproxy/haproxy.cfg
+sudo systemctl restart haproxy
+sudo ss -tlnp | grep -E <span class="str">':(6443|22623|443|80)'</span></pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p><code>sudo haproxy -c -f /etc/haproxy/haproxy.cfg</code> — <code>Configuration file is valid</code></p>
+      <p><code>sudo ss -tlnp | grep haproxy</code> shows 4 listening ports<span class="punct"> . </span></p>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Configure Firewall</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">nfs-haproxy</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>sudo firewall-cmd --permanent --add-service={http,https,nfs,rpc-bind,mountd}
+sudo firewall-cmd --permanent --add-port={6443/tcp,22623/tcp}
+sudo firewall-cmd --reload</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Configure NFS Export</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">nfs-haproxy</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>sudo mkdir -p <span class="ph" data-var="NFS_EXPORT">/srv/nfs/ocp-registry</span>
+sudo chown -R nobody:nobody <span class="ph" data-var="NFS_EXPORT">/srv/nfs/ocp-registry</span>
+sudo chmod 777 <span class="ph" data-var="NFS_EXPORT">/srv/nfs/ocp-registry</span>
+
+<span class="cm"># Format second disk</span>
+sudo mkfs.xfs /dev/sdb
+sudo mount /dev/sdb <span class="ph" data-var="NFS_EXPORT">/srv/nfs/ocp-registry</span>
+echo <span class="str">"/dev/sdb /srv/nfs/ocp-registry xfs defaults 0 0"</span> | sudo tee -a /etc/fstab
+
+<span class="cm"># Export</span>
+echo <span class="str">"/srv/nfs/ocp-registry *(rw,sync,no_subtree_check,no_root_squash)"</span> | sudo tee -a /etc/exports
+sudo exportfs -r</pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p><code>showmount -e localhost</code> — shows <code>/srv/nfs/ocp-registry *</code></p>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Configure nginx for Ignition</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">nfs-haproxy</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>sudo mkdir -p /usr/share/nginx/html/ignition
+sudo systemctl restart nginx
+curl -I http://localhost/ignition/</pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p><code>curl -I http://172.20.0.210/ignition/</code> returns HTTP 200/403<span class="punct"> . </span></p>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">SELinux Configuration</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">nfs-haproxy</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>sudo setsebool -P haproxy_connect_any on
+sudo setsebool -P nfs_export_all_rw on
+sudo semanage fcontext -a -t httpd_sys_content_t <span class="str">"/usr/share/nginx/html/ignition(/.*)?"</span>
+sudo restorecon -Rv /usr/share/nginx/html/ignition</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     SECTION 6 — OPENSHIFT VMS
+════════════════════════════════ -->
+<section class="section" id="ocp-vms">
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <h2 class="section-title">OpenShift VMs</h2>
+  </div>
+  <p class="prose">All commands run on <strong>WSL</strong><span class="punct"> . </span>Do not power on yet <span class="punct">—</span> ignition must be injected first <span class="punct"> ( </span>Section 7<span class="punct"> ) </span><span class="punct"> . </span></p>
+
+  <div class="subsection">
+    <div class="sub-title">Clone Bootstrap</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>govc vm.clone \
+  -vm rhcos-4.14-template -name bootstrap \
+  -net "<span class="ph" data-var="NETWORK">VM Network</span>" -net.adapter vmxnet3 \
+  -folder /<span class="ph" data-var="DATACENTER">Datacenter</span>/vm/ \
+  -pool /<span class="ph" data-var="DATACENTER">Datacenter</span>/host/<span class="ph" data-var="CLUSTER">Openshift</span>/Resources \
+  -ds <span class="ph" data-var="DATASTORE">hdd</span> -on <span class="val">false</span>
+
+govc vm.change -vm bootstrap -m <span class="val">16384</span> -c <span class="val">4</span>
+govc vm.disk.change -vm bootstrap -disk.label <span class="str">"Hard disk 1"</span> -size <span class="str">"120G"</span></pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Clone Master Nodes</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="kw">for</span> i <span class="kw">in</span> 0 1 2; <span class="kw">do</span>
+  govc vm.clone \
+    -vm rhcos-4.14-template -name master-<span class="val">$i</span> \
+    -net "<span class="ph" data-var="NETWORK">VM Network</span>" -net.adapter vmxnet3 \
+    -folder /<span class="ph" data-var="DATACENTER">Datacenter</span>/vm/ \
+    -pool /<span class="ph" data-var="DATACENTER">Datacenter</span>/host/<span class="ph" data-var="CLUSTER">Openshift</span>/Resources \
+    -ds <span class="ph" data-var="DATASTORE">hdd</span> -on <span class="val">false</span>
+  govc vm.change -vm master-<span class="val">$i</span> -m <span class="val">16384</span> -c <span class="val">4</span>
+  govc vm.disk.change -vm master-<span class="val">$i</span> -disk.label <span class="str">"Hard disk 1"</span> -size <span class="str">"120G"</span>
+<span class="kw">done</span></pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Clone Worker Nodes</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="kw">for</span> i <span class="kw">in</span> 0 1; <span class="kw">do</span>
+  govc vm.clone \
+    -vm rhcos-4.14-template -name worker-<span class="val">$i</span> \
+    -net "<span class="ph" data-var="NETWORK">VM Network</span>" -net.adapter vmxnet3 \
+    -folder /<span class="ph" data-var="DATACENTER">Datacenter</span>/vm/ \
+    -pool /<span class="ph" data-var="DATACENTER">Datacenter</span>/host/<span class="ph" data-var="CLUSTER">Openshift</span>/Resources \
+    -ds <span class="ph" data-var="DATASTORE">hdd</span> -on <span class="val">false</span>
+  govc vm.change -vm worker-<span class="val">$i</span> -m <span class="val">8192</span> -c <span class="val">2</span>
+  govc vm.disk.change -vm worker-<span class="val">$i</span> -disk.label <span class="str">"Hard disk 1"</span> -size <span class="str">"120G"</span>
+<span class="kw">done</span></pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p><code>govc ls /Datacenter/vm/{bootstrap,master-{0,1,2},worker-{0,1}}</code> — 6 VMs listed<span class="punct"> . </span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     SECTION 7 — IGNITION CONFIGS
+════════════════════════════════ -->
+<section class="section" id="ignition">
+  <div class="section-header">
+    <div class="section-num">7</div>
+    <h2 class="section-title">Generate Ignition Configs</h2>
+  </div>
+  <p class="prose">All commands on <strong>WSL</strong><span class="punct"> . </span></p>
+
+  <div class="subsection">
+    <div class="sub-title">Create install-config.yaml</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL — $OCP4_DIR/config/install-config.yaml</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>apiVersion: v1
+baseDomain: <span class="ph" data-var="BASE_DOMAIN">example.com</span>
+metadata:
+  name: <span class="ph" data-var="CLUSTER_NAME">ocp4</span>
+platform:
+  vsphere:
+    vcenter: <span class="ph" data-var="VCENTER_IP">172.20.0.101</span>
+    username: <span class="ph" data-var="VCENTER_USER">administrator@vsphere.local</span>
+    password: <span class="ph" data-var="VCENTER_PASSWORD">Root@123</span>
+    datacenter: <span class="ph" data-var="DATACENTER">Datacenter</span>
+    defaultDatastore: <span class="ph" data-var="DATASTORE">hdd</span>
+    folder: <span class="ph" data-var="VM_FOLDER">/Datacenter/vm/</span>
+    cluster: <span class="ph" data-var="CLUSTER">Openshift</span>
+    network: <span class="ph" data-var="NETWORK">VM Network</span>
+    apiVIP: <span class="ph" data-var="API_IP">172.20.0.220</span>
+    ingressVIP: <span class="ph" data-var="APPS_IP">172.20.0.221</span>
+networking:
+  clusterNetwork:
+    - cidr: 10.128.0.0/14
+      hostPrefix: 23
+  serviceNetwork:
+    - 172.30.0.0/16
+  networkType: OVNKubernetes
+compute:
+  - name: worker
+    replicas: <span class="val">2</span>
+controlPlane:
+  - name: master
+    replicas: <span class="val">3</span>
+pullSecret: '<span class="ph" data-var="PULL_SECRET">&lt;PULL_SECRET&gt;</span>'
+sshKey: |
+  <span class="ph">&lt;SSH_PUBLIC_KEY&gt;</span></pre>
+    </div>
+    <div class="callout danger">
+      <span class="callout-icon">&#9888;</span>
+      <div>Replace <code>&lt;PULL_SECRET&gt;</code> from <a href="https://cloud.redhat.com" style="color:var(--accent)">cloud.redhat.com</a> and <code>&lt;SSH_PUBLIC_KEY&gt;</code> from <code>cat ~/.ssh/openshift.pub</code><span class="punct"> . </span></div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Generate Manifests &amp; Ignition</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>openshift-install create manifests --dir=$OCP4_DIR/config
+openshift-install create ignition-configs --dir=$OCP4_DIR/config
+ls $OCP4_DIR/config/*.ign</pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p>Three <code>.ign</code> files exist: <code>bootstrap.ign</code><span class="punct"> , </span><code>master.ign</code><span class="punct"> , </span><code>worker.ign</code></p>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">SCP Ignition to nfs-haproxy</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>ssh -i ~/.ssh/openshift <span class="ph" data-var="NFS_HAPROXY_USER">khaled</span>@<span class="ph" data-var="NFS_HAPROXY_IP">172.20.0.210</span> sudo mkdir -p /usr/share/nginx/html/ignition
+
+scp -i ~/.ssh/openshift $OCP4_DIR/config/*.ign \
+  <span class="ph" data-var="NFS_HAPROXY_USER">khaled</span>@<span class="ph" data-var="NFS_HAPROXY_IP">172.20.0.210</span>:/tmp/
+
+ssh -i ~/.ssh/openshift <span class="ph" data-var="NFS_HAPROXY_USER">khaled</span>@<span class="ph" data-var="NFS_HAPROXY_IP">172.20.0.210</span> \
+  sudo mv /tmp/*.ign /usr/share/nginx/html/ignition/ && \
+  sudo chmod 644 /usr/share/nginx/html/ignition/*.ign && \
+  sudo restorecon -Rv /usr/share/nginx/html/ignition
+
+curl -sI http://<span class="ph" data-var="NFS_HAPROXY_IP">172.20.0.210</span>/ignition/bootstrap.ign | head -1</pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p><code>curl -sI http://172.20.0.210/ignition/bootstrap.ign</code> returns <code>HTTP/1.1 200 OK</code></p>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Inject Ignition into VMs</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>BOOTSTRAP_IGN_B64=$(base64 -w0 $OCP4_DIR/config/bootstrap.ign)
+MASTER_IGN_B64=$(base64 -w0 $OCP4_DIR/config/master.ign)
+WORKER_IGN_B64=$(base64 -w0 $OCP4_DIR/config/worker.ign)
+
+govc vm.change -vm bootstrap \
+  -e <span class="str">"guestinfo.ignition.config.data=$BOOTSTRAP_IGN_B64"</span> \
+  -e <span class="str">"guestinfo.ignition.config.data.encoding=base64"</span>
+
+<span class="kw">for</span> i <span class="kw">in</span> 0 1 2; <span class="kw">do</span>
+  govc vm.change -vm master-<span class="val">$i</span> \
+    -e <span class="str">"guestinfo.ignition.config.data=$MASTER_IGN_B64"</span> \
+    -e <span class="str">"guestinfo.ignition.config.data.encoding=base64"</span>
+<span class="kw">done</span>
+
+<span class="kw">for</span> i <span class="kw">in</span> 0 1; <span class="kw">do</span>
+  govc vm.change -vm worker-<span class="val">$i</span> \
+    -e <span class="str">"guestinfo.ignition.config.data=$WORKER_IGN_B64"</span> \
+    -e <span class="str">"guestinfo.ignition.config.data.encoding=base64"</span>
+<span class="kw">done</span></pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p><code>govc vm.info -e bootstrap | grep guestinfo.ignition</code> shows both keys<span class="punct"> . </span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     SECTION 8 — CLUSTER INSTALL
+════════════════════════════════ -->
+<section class="section" id="cluster-install">
+  <div class="section-header">
+    <div class="section-num">8</div>
+    <h2 class="section-title">Cluster Install</h2>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Power On Bootstrap</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>govc vm.power -on bootstrap
+openshift-install wait-for bootstrap-complete \
+  --dir=$OCP4_DIR/config --log-level debug</pre>
+    </div>
+    <div class="callout info">
+      <span class="callout-icon">&#8505;</span>
+      <div>This typically takes <strong>10-15 minutes</strong><span class="punct"> . </span>Ends with <code>It is now safe to remove the bootstrap resources</code><span class="punct"> . </span></div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Power On Masters</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="kw">for</span> i <span class="kw">in</span> 0 1 2; <span class="kw">do</span>
+  govc vm.power -on master-<span class="val">$i</span>
+  echo <span class="str">"master-$i powered on"</span>
+<span class="kw">done</span></pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Approve CSRs</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="kw">export</span> KUBECONFIG=$OCP4_DIR/config/auth/kubeconfig
+
+<span class="cm"># Auto-approve pending CSRs</span>
+oc get csr -o go-template='{{range .items}}{{if not .status}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}' | xargs oc adm certificate approve
+
+<span class="cm"># Monitor in loop</span>
+watch -n 10 'oc get csr -o go-template="{{range .items}}{{if not .status}}{{.metadata.name}} {{end}}{{end}}" | xargs -r oc adm certificate approve'</pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p><code>oc get nodes</code> shows masters as <code>Ready</code></p>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Power On Workers</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>govc vm.power -on worker-0
+govc vm.power -on worker-1
+
+<span class="cm"># Approve worker CSRs</span>
+oc get csr -o go-template='{{range .items}}{{if not .status}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}' | xargs oc adm certificate approve</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Wait for Install Complete</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre><span class="cm"># Can take 30-60 minutes</span>
+openshift-install wait-for install-complete \
+  --dir=$OCP4_DIR/config --log-level debug</pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p>Output ends with web console URL and admin credentials<span class="punct"> . </span></p>
+      <p><code>oc get nodes</code> shows all 5 nodes <span class="punct"> ( </span>3 masters + 2 workers<span class="punct"> ) </span>as <code>Ready</code></p>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Remove Bootstrap</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>govc vm.power -off bootstrap
+govc vm.destroy bootstrap
+
+ssh -i ~/.ssh/openshift <span class="ph" data-var="NFS_HAPROXY_USER">khaled</span>@<span class="ph" data-var="NFS_HAPROXY_IP">172.20.0.210</span> \
+  sudo sed -i '/server bootstrap/d' /etc/haproxy/haproxy.cfg && \
+  sudo systemctl restart haproxy</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     SECTION 9 — POST-INSTALL
+════════════════════════════════ -->
+<section class="section" id="postinstall">
+  <div class="section-header">
+    <div class="section-num">9</div>
+    <h2 class="section-title">Post-Install</h2>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Configure Image Registry <span class="punct"> ( </span>NFS-backed<span class="punct"> ) </span></div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>oc patch configs.imageregistry.operator.openshift.io cluster \
+  --type merge \
+  --patch '<span class="str">{"spec":{"managementState":"Managed","storage":{"nfs":{"server":"172.20.0.210","path":"/srv/nfs/ocp-registry"}}}}</span>'</pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p><code>oc get clusteroperator image-registry</code> shows <code>Available=True</code></p>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Verify All Operators</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>oc get clusteroperators
+oc get clusterversion
+oc get nodes -o wide
+oc get pods --all-namespaces</pre>
+    </div>
+    <div class="verify">
+      <div class="v-label">Verify</div>
+      <p><code>oc get clusterversion</code> shows <code>4.14.x</code> with <code>Available=True</code></p>
+      <p>All operators show <code>True / False / False</code> <span class="punct"> ( </span>Available / Degraded / Progressing<span class="punct"> ) </span></p>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Access the Cluster</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>cat $OCP4_DIR/config/auth/kubeadmin-password
+echo <span class="str">"https://console-openshift-console.apps.ocp4.example.com"</span>
+
+oc login -u kubeadmin -p <span class="str">"$(cat $OCP4_DIR/config/auth/kubeadmin-password)"</span> \
+  https://api.ocp4.example.com:6443</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     SECTION 10 — CLEANUP
+════════════════════════════════ -->
+<section class="section" id="cleanup">
+  <div class="section-header">
+    <div class="section-num">10</div>
+    <h2 class="section-title">Cleanup</h2>
+  </div>
+  <p class="prose">Destroy all VMs in reverse order<span class="punct"> . </span>All commands on <strong>WSL</strong><span class="punct"> . </span></p>
+  <div class="code-block">
+    <div class="cb-head"><span class="cb-label">WSL — Destroy all VMs</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+    <pre><span class="cm"># Workers</span>
+govc vm.power -off worker-0 worker-1
+govc vm.destroy worker-0 worker-1
+
+<span class="cm"># Masters</span>
+govc vm.power -off master-0 master-1 master-2
+govc vm.destroy master-0 master-1 master-2
+
+<span class="cm"># Bootstrap (if still exists)</span>
+govc vm.power -off bootstrap 2>/dev/null; govc vm.destroy bootstrap 2>/dev/null
+
+<span class="cm"># nfs-haproxy (skip if you want to keep it)</span>
+govc vm.power -off nfs-haproxy
+govc vm.destroy nfs-haproxy
+
+<span class="cm"># Template</span>
+govc vm.destroy rhcos-4.14-template
+
+<span class="cm"># Verify empty</span>
+govc ls /<span class="ph" data-var="DATACENTER">Datacenter</span>/vm/</pre>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     SECTION 11 — TROUBLESHOOTING
+════════════════════════════════ -->
+<section class="section" id="troubleshooting">
+  <div class="section-header">
+    <div class="section-num">11</div>
+    <h2 class="section-title">Troubleshooting</h2>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">govc Cannot Connect</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>nc -zv <span class="ph" data-var="VCENTER_IP">172.20.0.101</span> 443
+env | grep GOVC
+<span class="cm"># Ensure GOVC_INSECURE=true for self-signed certs</span></pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Bootstrap Not Completing</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL — SSH to bootstrap</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>ssh -i ~/.ssh/openshift core@<span class="ph" data-var="BOOTSTRAP_IP">172.20.0.230</span>
+sudo journalctl -b -f -u release-image.service -u setup.service
+sudo journalctl -b -f -u bootkube.service
+sudo journalctl -b -f -u kubelet.service</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Master Not Joining</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL — SSH to master</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>ssh -i ~/.ssh/openshift core@<span class="ph" data-var="MASTER_0_IP">172.20.0.231</span>
+sudo journalctl -u kubelet -f
+sudo crictl ps
+curl -I http://<span class="ph" data-var="NFS_HAPROXY_IP">172.20.0.210</span>/ignition/master.ign</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Ignition Not Fetched</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">nfs-haproxy</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+curl -I http://localhost/ignition/bootstrap.ign
+sudo ausearch -m avc -ts recent
+govc vm.info -e bootstrap | grep guestinfo.ignition</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">DNS Resolution Fails</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">Any Node</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>nslookup api.ocp4.example.com <span class="ph" data-var="DNS1">172.16.6.70</span>
+dig api.ocp4.example.com @<span class="ph" data-var="DNS1">172.16.6.70</span>
+cat /etc/resolv.conf</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">NFS Registry Not Mounting</div>
+    <div class="code-block">
+      <div class="cb-head"><span class="cb-label">WSL</span><div class="cb-dots"><span></span><span></span><span></span></div></div>
+      <pre>oc logs -n openshift-image-registry deployment/image-registry
+oc debug node/master-0 -- chroot /host showmount -e <span class="ph" data-var="NFS_HAPROXY_IP">172.20.0.210</span>
+oc debug node/master-0 -- chroot /host mount -t nfs <span class="ph" data-var="NFS_HAPROXY_IP">172.20.0.210</span>:<span class="ph" data-var="NFS_EXPORT">/srv/nfs/ocp-registry</span> /mnt</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Log Locations</div>
+    <table class="info-table">
+      <thead><tr><th>Node</th><th>Service</th><th>Command</th></tr></thead>
+      <tbody>
+        <tr><td>bootstrap</td><td>Bootkube</td><td><code>journalctl -u bootkube.service -f</code></td></tr>
+        <tr><td>bootstrap</td><td>Kubelet</td><td><code>journalctl -u kubelet.service -f</code></td></tr>
+        <tr><td>master</td><td>Kubelet</td><td><code>journalctl -u kubelet -f</code></td></tr>
+        <tr><td>master</td><td>CRI-O</td><td><code>sudo crictl ps</code></td></tr>
+        <tr><td>nfs-haproxy</td><td>HAProxy</td><td><code>journalctl -u haproxy -f</code></td></tr>
+        <tr><td>nfs-haproxy</td><td>nginx</td><td><code>tail -f /var/log/nginx/access.log</code></td></tr>
+        <tr><td>nfs-haproxy</td><td>SELinux</td><td><code>ausearch -m avc -ts recent</code></td></tr>
+        <tr><td>WSL</td><td>Installer log</td><td><code>$OCP4_DIR/.openshift_install.log</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     SECTION 12 — VERIFICATION TESTS
+════════════════════════════════ -->
+<section class="section" id="tests">
+  <div class="section-header">
+    <div class="section-num">12</div>
+    <h2 class="section-title">Verification Tests</h2>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Pre-Install Tests</div>
+    <table class="info-table">
+      <thead><tr><th>#</th><th>Test</th><th>Expected</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><code>govc about</code></td><td>vCenter version</td></tr>
+        <tr><td>2</td><td><code>govc datacenter.info</code></td><td>Datacenter matches <span class="ph" data-var="DATACENTER">Datacenter</span></td></tr>
+        <tr><td>3</td><td><code>govc cluster.info</code></td><td>Cluster matches <span class="ph" data-var="CLUSTER">Openshift</span></td></tr>
+        <tr><td>4</td><td><code>govc datastore.info</code></td><td>Datastore matches <span class="ph" data-var="DATASTORE">hdd</span></td></tr>
+        <tr><td>5</td><td><code>govc network.info</code></td><td>Network matches <span class="ph" data-var="NETWORK">VM Network</span></td></tr>
+        <tr><td>6</td><td><code>ls -la ~/.ssh/openshift*</code></td><td>2 key files</td></tr>
+        <tr><td>7</td><td><code>govc vm.info rhcos-4.14-template</code></td><td>Template exists</td></tr>
+        <tr><td>8</td><td><code>dig api.ocp4.example.com</code></td><td><span class="ph" data-var="API_IP">172.20.0.220</span></td></tr>
+        <tr><td>9</td><td><code>nslookup test.apps.ocp4.example.com</code></td><td><span class="ph" data-var="APPS_IP">172.20.0.221</span></td></tr>
+        <tr><td>10</td><td>All nodes resolve</td><td>6 IPs match DNS table</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">HAProxy &amp; NFS Tests</div>
+    <table class="info-table">
+      <thead><tr><th>#</th><th>Test</th><th>Expected</th></tr></thead>
+      <tbody>
+        <tr><td>11</td><td><code>ssh -i ~/.ssh/openshift khaled@172.20.0.210 whoami</code></td><td><code>khaled</code></td></tr>
+        <tr><td>12</td><td><code>haproxy -c -f /etc/haproxy/haproxy.cfg</code></td><td><code>Configuration file is valid</code></td></tr>
+        <tr><td>13</td><td><code>ss -tlnp | grep -E ':(6443|22623|443|80)'</code></td><td>4 haproxy entries</td></tr>
+        <tr><td>14</td><td><code>exportfs -v</code></td><td>NFS export listed</td></tr>
+        <tr><td>15</td><td><code>showmount -e localhost</code></td><td>Export visible</td></tr>
+        <tr><td>16</td><td>nginx running</td><td><code>HTTP/1.1 200</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">VM &amp; Ignition Tests</div>
+    <table class="info-table">
+      <thead><tr><th>#</th><th>Test</th><th>Expected</th></tr></thead>
+      <tbody>
+        <tr><td>17</td><td>6 VMs exist</td><td><code>govc ls /Datacenter/vm/{bootstrap,master-{0,1,2},worker-{0,1}}</code></td></tr>
+        <tr><td>18</td><td>Bootstrap specs</td><td>16 GB, 4 CPU, 120 GB</td></tr>
+        <tr><td>19</td><td>Master specs</td><td>16 GB, 4 CPU, 120 GB</td></tr>
+        <tr><td>20</td><td>Worker specs</td><td>8 GB, 2 CPU, 120 GB</td></tr>
+        <tr><td>21</td><td>Ignition injected</td><td><code>guestinfo.ignition.config.data</code> present</td></tr>
+        <tr><td>22</td><td>3 .ign files</td><td>bootstrap, master, worker</td></tr>
+        <tr><td>23</td><td>Ignition served</td><td><code>curl http://172.20.0.210/ignition/bootstrap.ign</code> → <code>200 OK</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subsection">
+    <div class="sub-title">Cluster Tests</div>
+    <table class="info-table">
+      <thead><tr><th>#</th><th>Test</th><th>Expected</th></tr></thead>
+      <tbody>
+        <tr><td>24</td><td>Bootstrap powers on</td><td><code>poweredOn</code></td></tr>
+        <tr><td>25</td><td>Masters power on</td><td><code>poweredOn</code></td></tr>
+        <tr><td>26</td><td>Workers power on</td><td><code>poweredOn</code></td></tr>
+        <tr><td>27</td><td>Bootstrap complete</td><td>Success message</td></tr>
+        <tr><td>28</td><td>CSRs approved</td><td>0 Pending</td></tr>
+        <tr><td>29</td><td>Nodes Ready</td><td>5 nodes Ready</td></tr>
+        <tr><td>30</td><td>Install completes</td><td>Credentials displayed</td></tr>
+        <tr><td>31</td><td>Version</td><td><code>4.14.x</code>, <code>Available=True</code></td></tr>
+        <tr><td>32</td><td>Operators healthy</td><td>All True/False/False</td></tr>
+        <tr><td>33</td><td>Registry running</td><td>Pod Running</td></tr>
+        <tr><td>34</td><td>NFS storage</td><td>nfs server: <span class="ph" data-var="NFS_HAPROXY_IP">172.20.0.210</span></td></tr>
+        <tr><td>35</td><td>Console accessible</td><td>HTTP 200/302</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<script src="/js/variables.js"></script>
+<script src="/js/nav.js"></script>
+<script src="/js/theme.js"></script>
+<script src="/js/lang.js"></script>
+</body>
+</html>

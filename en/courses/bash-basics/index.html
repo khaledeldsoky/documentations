@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bash Scripting Basics — Quick Reference</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');</style>
+<link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <button class="topbar-hamburger" id="hamburger">☰</button>
+      <a class="topbar-brand" href="../../">📘 Bash Scripting Basics</a>
+      <button class="topbar-back" onclick="window.history.back()">← Back</button>
+    </div>
+    <div class="topbar-right">
+      <button id="theme-toggle" class="theme-toggle">🌙</button>
+      <button id="lang-toggle" class="theme-toggle">العربية</button>
+    </div>
+  </div>
+</nav>
+
+<div class="topbar-drawer" id="topbar-drawer">
+  <div class="nav-group"><span class="gi">🔀</span> Conditionals <span class="punct"> — </span> IF</div>
+  <a class="nav-item l1" href="#if-file">1<span class="punct"> . </span> Check File Exists</a>
+  <a class="nav-item l1" href="#if-number">2<span class="punct"> . </span> Compare Numbers</a>
+  <a class="nav-item l1" href="#if-string">3<span class="punct"> . </span> Compare Strings</a>
+  <a class="nav-item l1" href="#if-empty-dir">4<span class="punct"> . </span> Check Empty Directory</a>
+
+  <div class="nav-group"><span class="gi">🔄</span> Loops <span class="punct"> — </span> For &amp; While</div>
+  <a class="nav-item l1" href="#for-list">5<span class="punct"> . </span> For Loop <span class="punct"> — </span> List</a>
+  <a class="nav-item l1" href="#for-files">6<span class="punct"> . </span> For Loop <span class="punct"> — </span> Files</a>
+  <a class="nav-item l1" href="#for-range">7<span class="punct"> . </span> For Loop <span class="punct"> — </span> Range</a>
+  <a class="nav-item l1" href="#while-count">8<span class="punct"> . </span> While Loop <span class="punct"> — </span> Count</a>
+  <a class="nav-item l1" href="#while-read">9<span class="punct"> . </span> While Loop <span class="punct"> — </span> Read File</a>
+  <a class="nav-item l1" href="#while-infinite">10<span class="punct"> . </span> While Loop <span class="punct"> — </span> Infinite</a>
+
+  <div class="nav-group"><span class="gi">📦</span> Functions <span class="punct"> — </span> Functions</div>
+  <a class="nav-item l1" href="#functions">11<span class="punct"> . </span> Functions</a>
+</div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <button class="sidebar-toggle" id="sidebar-toggle">◀</button>
+  </div>
+  <div class="sidebar-scroll">
+    <div class="sidebar-logo">
+      <div class="eyebrow">Scripting / Bash</div>
+      <h1>Bash Scripting<br>Basics</h1>
+    </div>
+    <nav>
+      <div class="nav-group"><span class="gi">🔀</span> Conditionals <span class="punct"> — </span> IF</div>
+      <a class="nav-item l1" href="#if-file">1<span class="punct"> . </span> Check File Exists</a>
+      <a class="nav-item l1" href="#if-number">2<span class="punct"> . </span> Compare Numbers</a>
+      <a class="nav-item l1" href="#if-string">3<span class="punct"> . </span> Compare Strings</a>
+      <a class="nav-item l1" href="#if-empty-dir">4<span class="punct"> . </span> Check Empty Directory</a>
+
+      <div class="nav-group"><span class="gi">🔄</span> Loops <span class="punct"> — </span> For &amp; While</div>
+      <a class="nav-item l1" href="#for-list">5<span class="punct"> . </span> For Loop <span class="punct"> — </span> List</a>
+      <a class="nav-item l1" href="#for-files">6<span class="punct"> . </span> For Loop <span class="punct"> — </span> Files</a>
+      <a class="nav-item l1" href="#for-range">7<span class="punct"> . </span> For Loop <span class="punct"> — </span> Range</a>
+      <a class="nav-item l1" href="#while-count">8<span class="punct"> . </span> While Loop <span class="punct"> — </span> Count</a>
+      <a class="nav-item l1" href="#while-read">9<span class="punct"> . </span> While Loop <span class="punct"> — </span> Read File</a>
+      <a class="nav-item l1" href="#while-infinite">10<span class="punct"> . </span> While Loop <span class="punct"> — </span> Infinite</a>
+
+      <div class="nav-group"><span class="gi">📦</span> Functions <span class="punct"> — </span> Functions</div>
+      <a class="nav-item l1" href="#functions">11<span class="punct"> . </span> Functions</a>
+    </nav>
+    <div class="sidebar-footer" id="sidebar-footer">Bash Scripting Basics v1.0</div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="breadcrumb">scripting / bash / basics</div>
+    <h1>Bash Scripting Basics<br><span class="hl">Bash Scripting Basics</span></h1>
+    <p class="prose">
+      A quick reference for the most common Bash scripting patterns<span class="punct"> . </span>
+      Conditionals<span class="punct"> , </span> loops<span class="punct"> , </span> and functions<span class="punct"> . </span>
+    </p>
+    <div class="chip-row">
+      <span class="chip chip-green">Bash</span>
+      <span class="chip chip-blue">Scripting</span>
+      <span class="chip chip-amber">Beginner</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 1 — CHECK FILE EXISTS
+  ═══════════════════════════════════════ -->
+  <section class="section" id="if-file">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">1</div>
+      <h2 class="section-title">Check if a File Exists</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">file existence check</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>#!/bin/bash
+file="test.txt"
+if [ -f "$file" ]; then
+    echo "$file exists"
+else
+    echo "$file does not exist"
+fi</pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 2 — COMPARE NUMBERS
+  ═══════════════════════════════════════ -->
+  <section class="section" id="if-number">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">2</div>
+      <h2 class="section-title">Compare Numbers</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">numeric comparison</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>#!/bin/bash
+num=15
+if [ $num -gt 10 ]; then
+    echo "$num is greater than 10"
+elif [ $num -eq 10 ]; then
+    echo "$num equals 10"
+else
+    echo "$num is less than 10"
+fi</pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 3 — COMPARE STRINGS
+  ═══════════════════════════════════════ -->
+  <section class="section" id="if-string">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">3</div>
+      <h2 class="section-title">Compare Strings</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">string comparison</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>#!/bin/bash
+user="Alice"
+if [ "$user" = "Alice" ]; then
+    echo "Welcome, $user!"
+else
+    echo "Unknown user"
+fi</pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 4 — CHECK EMPTY DIRECTORY
+  ═══════════════════════════════════════ -->
+  <section class="section" id="if-empty-dir">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">4</div>
+      <h2 class="section-title">Check if Directory is Empty</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">empty directory check</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>#!/bin/bash
+dir="myfolder"
+if [ -z "$(ls -A $dir)" ]; then
+    echo "$dir is empty"
+else
+    echo "$dir is not empty"
+fi</pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 5 — FOR LOOP LIST
+  ═══════════════════════════════════════ -->
+  <section class="section" id="for-list">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">5</div>
+      <h2 class="section-title">For Loop <span class="punct"> — </span> Iterate Over a List</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">iterate over words</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>#!/bin/bash
+for fruit in apple banana orange; do
+    echo "Fruit: $fruit"
+done</pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 6 — FOR LOOP FILES
+  ═══════════════════════════════════════ -->
+  <section class="section" id="for-files">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">6</div>
+      <h2 class="section-title">For Loop <span class="punct"> — </span> Loop Over Files</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">loop over files in directory</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>#!/bin/bash
+for file in *.txt; do
+    echo "Found file: ${file}"
+done</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">list all files in current dir</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>#!/bin/bash
+for file in *; do
+    echo "File: $file"
+done</pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 7 — FOR LOOP RANGE
+  ═══════════════════════════════════════ -->
+  <section class="section" id="for-range">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">7</div>
+      <h2 class="section-title">For Loop <span class="punct"> — </span> Numeric Range</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">iterate over a range</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>#!/bin/bash
+for i in {1..5}; do
+    echo "Number: $i"
+done</pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 8 — WHILE COUNT
+  ═══════════════════════════════════════ -->
+  <section class="section" id="while-count">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">8</div>
+      <h2 class="section-title">While Loop <span class="punct"> — </span> Count</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">count from 1 to 5</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>#!/bin/bash
+count=1
+while [ $count -le 5 ]; do
+    echo "Count: $count"
+    ((count++))
+done</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">print numbers 1 to 10</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>num=1
+while [ $num -le 10 ]; do
+    echo "$num"
+    ((num++))
+done</pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 9 — WHILE READ FILE
+  ═══════════════════════════════════════ -->
+  <section class="section" id="while-read">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">9</div>
+      <h2 class="section-title">While Loop <span class="punct"> — </span> Read File</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">read file line by line</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>#!/bin/bash
+file="input.txt"
+while IFS= read -r line; do
+    echo "Line: $line"
+done < "$file"</pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 10 — WHILE INFINITE
+  ═══════════════════════════════════════ -->
+  <section class="section" id="while-infinite">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">10</div>
+      <h2 class="section-title">While Loop <span class="punct"> — </span> Infinite with User Input</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">infinite loop until 'quit'</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>#!/bin/bash
+while true; do
+    echo "Enter 'quit' to exit: "
+    read input
+    if [ "$input" = "quit" ]; then
+        break
+    fi
+    echo "You entered: $input"
+done</pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 11 — FUNCTIONS
+  ═══════════════════════════════════════ -->
+  <section class="section" id="functions">
+    <div class="section-header">
+      <div class="section-num" style="background:var(--accent3);color:#000;">11</div>
+      <h2 class="section-title">Functions</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="cb-head">
+        <span class="cb-label">define and call a function</span>
+        <span class="cb-dots"><span></span><span></span><span></span></span>
+      </div>
+      <pre>#!/bin/bash
+
+<span class="cm"># Define a function</span>
+my_function() {
+    echo "Hello, $1!"
+}
+
+<span class="cm"># Call the function with an argument</span>
+my_function "User"</pre>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ── Active nav tracking ──
+const sections = document.querySelectorAll('.section[id]');
+const navLinks = document.querySelectorAll('.nav-item');
+if (sections.length && navLinks.length) {
+  const navMap = {};
+  navLinks.forEach(a => {
+    const id = a.getAttribute('href')?.replace('#', '');
+    if (id) navMap[id] = a;
+  });
+  const obs = new IntersectionObserver(entries => {
+    let best = null, bestRatio = 0;
+    entries.forEach(e => {
+      if (e.intersectionRatio > bestRatio) { best = e.target.id; bestRatio = e.intersectionRatio; }
+    });
+    navLinks.forEach(a => a.classList.remove('active'));
+    if (best && navMap[best]) navMap[best].classList.add('active');
+  }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+  sections.forEach(s => obs.observe(s));
+}
+
+// ── Sidebar collapse toggle ──
+const sidebarEl = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const savedCollapse = localStorage.getItem('sidebar-collapsed');
+if (savedCollapse === 'true' && sidebarEl) sidebarEl.classList.add('collapsed');
+if (sidebarToggle && sidebarEl) {
+  if (sidebarEl.classList.contains('collapsed')) sidebarToggle.textContent = '▶';
+  sidebarToggle.addEventListener('click', () => {
+    sidebarEl.classList.toggle('collapsed');
+    sidebarToggle.textContent = sidebarEl.classList.contains('collapsed') ? '▶' : '◀';
+    localStorage.setItem('sidebar-collapsed', sidebarEl.classList.contains('collapsed'));
+  });
+}
+
+// ── Hamburger toggle ──
+const ham = document.getElementById('hamburger');
+const drawer = document.getElementById('topbar-drawer');
+if (ham && drawer) {
+  ham.addEventListener('click', () => drawer.classList.toggle('open'));
+}
+
+// ── Theme toggle ──
+const savedTheme = localStorage.getItem('claude-guide-theme');
+if (savedTheme === 'light') document.documentElement.classList.add('light');
+
+const btn = document.getElementById('theme-toggle');
+if (btn) {
+  btn.textContent = document.documentElement.classList.contains('light') ? '☀️' : '🌙';
+  btn.addEventListener('click', () => {
+    document.documentElement.classList.toggle('light');
+    const isLight = document.documentElement.classList.contains('light');
+    btn.textContent = isLight ? '☀️' : '🌙';
+    localStorage.setItem('claude-guide-theme', isLight ? 'light' : 'dark');
+  });
+}
+</script>
+<script src="/js/lang.js"></script>
+</body>
+</html>

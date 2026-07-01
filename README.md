@@ -11,12 +11,14 @@ Bilingual technical documentation site — Arabic (RTL) and English (LTR) — co
 │   ├── index.html          # Dashboard
 │   └── courses/
 │       ├── github-actions/ # GitHub Actions Guide
-│       └── linux-admin/    # Linux Administration Guide
+│       ├── linux-admin/    # Linux Administration Guide
+│       └── openshift-4.14-upi/  # OpenShift 4.14 UPI on vSphere
 ├── en/                     # English content (LTR)
 │   ├── index.html          # Dashboard
 │   └── courses/
 │       ├── github-actions/ # GitHub Actions Guide
-│       └── linux-admin/    # Linux Administration Guide
+│       ├── linux-admin/    # Linux Administration Guide
+│       └── openshift-4.14-upi/  # OpenShift 4.14 UPI on vSphere
 ├── css/                    # Shared styles
 │   └── style.css
 ├── js/
